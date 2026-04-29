@@ -11,8 +11,12 @@ function verifyAdmin(req: NextRequest) {
     } catch { return null }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+    ) {
     if (!verifyAdmin(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
+    const { id } = await params
     const body = await req.json()
     const { error } = await supabase
     .from('questions')
@@ -24,14 +28,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         option_d: body.option_d,
         correct_answer: body.correct_answer,
     })
-    .eq('id', params.id)
+    .eq('id', id)
     if (error) return NextResponse.json({ error: 'Cập nhật thất bại!' }, { status: 400 })
     return NextResponse.json({ success: true })
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+    ) {
     if (!verifyAdmin(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
-    const { error } = await supabase.from('questions').delete().eq('id', params.id)
+    const { id } = await params
+    const { error } = await supabase.from('questions').delete().eq('id', id)
     if (error) return NextResponse.json({ error: 'Xóa thất bại!' }, { status: 400 })
     return NextResponse.json({ success: true })
 }
