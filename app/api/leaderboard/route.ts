@@ -14,7 +14,13 @@ export async function GET(req: NextRequest) {
 
     if (!quizSet) return NextResponse.json({ rankings: [] })
 
-    // Lấy tất cả attempts đã hoàn thành
+    // Chỉ đếm các lượt đã nộp xong để leaderboard phản ánh số lần thi hoàn tất
+    const { data: allAttempts } = await supabase
+    .from('attempts')
+    .select('user_id')
+    .eq('quiz_set_id', quizSet.id)
+    .not('finished_at', 'is', null)
+
     const { data: attempts } = await supabase
     .from('attempts')
     .select(`
@@ -28,11 +34,16 @@ export async function GET(req: NextRequest) {
     .not('finished_at', 'is', null)
 
     if (!attempts || attempts.length === 0) {
-    return NextResponse.json({ rankings: [] })
+    return NextResponse.json({ rankings: [], totalAttempts: allAttempts?.length || 0 })
     }
 
     // Gom nhóm theo user, lấy điểm cao nhất
     const userMap: Record<string, any> = {}
+    const attemptCountMap = (allAttempts || []).reduce((map: Record<string, number>, attempt) => {
+    map[attempt.user_id] = (map[attempt.user_id] || 0) + 1
+    return map
+    }, {})
+
     attempts.forEach(a => {
     const uid = a.user_id
     if (!userMap[uid]) {
@@ -43,10 +54,9 @@ export async function GET(req: NextRequest) {
         best_score: a.score,
         best_time: a.time_spent_seconds,
         total_questions: a.total_questions,
-        total_attempts: 1,
+        total_attempts: attemptCountMap[uid] || 0,
         }
     } else {
-        userMap[uid].total_attempts++
         if (
         a.score > userMap[uid].best_score ||
         (a.score === userMap[uid].best_score && a.time_spent_seconds < userMap[uid].best_time)
@@ -63,5 +73,5 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.best_score - a.best_score || a.best_time - b.best_time)
     .map((r, idx) => ({ ...r, rank: idx + 1 }))
 
-    return NextResponse.json({ rankings, quizTitle: quizSet.title })
+    return NextResponse.json({ rankings, quizTitle: quizSet.title, totalAttempts: allAttempts?.length || 0 })
 }

@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { unstable_cache } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import { verifyTokenString } from '@/lib/request-auth'
 import DashboardActions from './dashboard-actions'
@@ -30,37 +29,31 @@ type AttemptInfo = {
     total_attempts: number
 }
 
-const getCachedUserData = unstable_cache(
-    async (userId: string): Promise<User | null> => {
-        const { data } = await supabase
-            .from('users')
-            .select('id, phone, full_name, role, lien_doan, chi_doi, password_hash')
-            .eq('id', userId)
-            .single<User>()
-        return data
-    },
-    ['dashboard-user'],
-    { revalidate: 300 } // Cache 5 minutes
-)
+async function getUserData(userId: string): Promise<User | null> {
+    const { data } = await supabase
+        .from('users')
+        .select('id, phone, full_name, role, lien_doan, chi_doi, password_hash')
+        .eq('id', userId)
+        .single<User>()
+    return data
+}
 
-const getCachedQuizAndAttempts = unstable_cache(
-    async (userId: string): Promise<{ quizSet: QuizSet | null; attemptInfo: AttemptInfo | null }> => {
-        const { data: quizSet } = await supabase
-            .from('quiz_sets')
-            .select('id, title, exam_date, duration_seconds, is_active')
-            .eq('is_active', true)
-            .single<QuizSet>()
+async function getQuizAndAttempts(userId: string): Promise<{ quizSet: QuizSet | null; attemptInfo: AttemptInfo | null }> {
+    const { data: quizSet } = await supabase
+        .from('quiz_sets')
+        .select('id, title, exam_date, duration_seconds, is_active')
+        .eq('is_active', true)
+        .single<QuizSet>()
 
-        let attemptInfo: AttemptInfo | null = null
-        if (quizSet?.id) {
-        // Query riêng đếm TỔNG lượt (kể cả chưa nộp)
+    let attemptInfo: AttemptInfo | null = null
+    if (quizSet?.id) {
         const { count: totalCount } = await supabase
             .from('attempts')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', userId)
             .eq('quiz_set_id', quizSet.id)
+            .not('finished_at', 'is', null)
 
-        // Query lấy điểm cao nhất (chỉ lượt đã nộp)
         const { data: attempts } = await supabase
             .from('attempts')
             .select('score, time_spent_seconds, total_questions')
@@ -68,7 +61,7 @@ const getCachedQuizAndAttempts = unstable_cache(
             .eq('quiz_set_id', quizSet.id)
             .not('finished_at', 'is', null)
 
-        if (totalCount && totalCount > 0) {
+        if ((totalCount || 0) > 0) {
             const bestAttempt = attempts && attempts.length > 0
                 ? attempts.reduce((best, current) => {
                     if (!best) return current
@@ -81,16 +74,13 @@ const getCachedQuizAndAttempts = unstable_cache(
             attemptInfo = {
                 quiz_set_id: quizSet.id,
                 best_score: bestAttempt?.score ?? 0,
-                total_attempts: totalCount,
+                total_attempts: totalCount || 0,
             }
         }
     }
 
-        return { quizSet, attemptInfo }
-    },
-    ['dashboard-quiz-attempts'],
-    { revalidate: false } // Cache 1 minute
-)
+    return { quizSet, attemptInfo }
+}
 
 export default async function DashboardPage() {
     const cookieStore = await cookies()
@@ -102,8 +92,8 @@ export default async function DashboardPage() {
 
     // Lấy user data và quiz data song song
     const [user, { quizSet, attemptInfo }] = await Promise.all([
-        getCachedUserData(decoded.id),
-        getCachedQuizAndAttempts(decoded.id)
+        getUserData(decoded.id),
+        getQuizAndAttempts(decoded.id)
     ])
 
     if (!user) redirect('/dang-nhap')

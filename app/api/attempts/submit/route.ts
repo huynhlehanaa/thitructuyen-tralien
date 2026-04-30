@@ -3,26 +3,28 @@ import { supabase } from '@/lib/supabase'
 import { verifyUserRequest } from '@/lib/request-auth'
 
 export async function POST(req: NextRequest) {
-    if (!verifyUserRequest(req)) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
+    const decoded = verifyUserRequest(req)
+    if (!decoded) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
 
     const { attemptId, answers, timeSpent } = await req.json()
 
     // Lấy attempt
-    const { data: attempt } = await supabase
+    const { data: attempt, error: attemptError } = await supabase
     .from('attempts')
-    .select('*, quiz_sets(id)')
+    .select('id, user_id, quiz_set_id, quiz_sets(id)')
     .eq('id', attemptId)
     .single()
 
-    if (!attempt) return NextResponse.json({ error: 'Không tìm thấy lượt thi!' }, { status: 404 })
+    if (attemptError || !attempt) return NextResponse.json({ error: 'Không tìm thấy lượt thi!' }, { status: 404 })
+    if (attempt.user_id !== decoded.id) return NextResponse.json({ error: 'Không có quyền nộp lượt thi này!' }, { status: 403 })
 
     // Lấy đáp án đúng
-    const { data: questions } = await supabase
+    const { data: questions, error: questionsError } = await supabase
     .from('questions')
     .select('id, correct_answer')
     .eq('quiz_set_id', attempt.quiz_set_id)
 
-    if (!questions) return NextResponse.json({ error: 'Lỗi!' }, { status: 400 })
+    if (questionsError || !questions) return NextResponse.json({ error: 'Lỗi!' }, { status: 400 })
 
     // Tính điểm
     let score = 0
@@ -31,7 +33,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Cập nhật kết quả
-    await supabase
+    const { error: updateError } = await supabase
     .from('attempts')
     .update({
         score,
@@ -39,6 +41,10 @@ export async function POST(req: NextRequest) {
         finished_at: new Date().toISOString()
     })
     .eq('id', attemptId)
+
+    if (updateError) {
+        return NextResponse.json({ error: 'Không lưu được kết quả!' }, { status: 500 })
+    }
 
     return NextResponse.json({
     score,

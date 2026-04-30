@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { unstable_cache } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import { verifyTokenString } from '@/lib/request-auth'
 import LeaderboardNav from './leaderboard-nav'
@@ -16,8 +15,7 @@ interface RankEntry {
     total_attempts: number
 }
 
-const getCachedRankings = unstable_cache(
-    async (): Promise<RankEntry[]> => {
+async function getRankings(): Promise<RankEntry[]> {
     const { data: quizSet } = await supabase
         .from('quiz_sets')
         .select('id')
@@ -25,6 +23,12 @@ const getCachedRankings = unstable_cache(
         .single()
 
     if (!quizSet?.id) return []
+
+    const { data: allAttempts } = await supabase
+        .from('attempts')
+        .select('user_id')
+        .eq('quiz_set_id', quizSet.id)
+        .not('finished_at', 'is', null)
 
     const { data: attempts } = await supabase
         .from('attempts')
@@ -41,6 +45,10 @@ const getCachedRankings = unstable_cache(
     if (!attempts || attempts.length === 0) return []
 
     const userMap: Record<string, Omit<RankEntry, 'rank'>> = {}
+    const attemptCountMap = (allAttempts || []).reduce((map: Record<string, number>, attempt: any) => {
+        map[attempt.user_id] = (map[attempt.user_id] || 0) + 1
+        return map
+    }, {})
 
     attempts.forEach((a: any) => {
         const uid = a.user_id
@@ -52,10 +60,9 @@ const getCachedRankings = unstable_cache(
             best_score: a.score,
             total_questions: a.total_questions,
             best_time: a.time_spent_seconds,
-            total_attempts: 1,
+            total_attempts: attemptCountMap[uid] || 0,
         }
         } else {
-        userMap[uid].total_attempts++
         if (
             a.score > userMap[uid].best_score ||
             (a.score === userMap[uid].best_score && a.time_spent_seconds < userMap[uid].best_time)
@@ -70,10 +77,7 @@ const getCachedRankings = unstable_cache(
     return Object.values(userMap)
         .sort((a, b) => b.best_score - a.best_score || a.best_time - b.best_time)
         .map((r, idx) => ({ ...r, rank: idx + 1 }))
-    },
-    ['leaderboard-rankings'],
-    { revalidate: 5 }
-)
+}
 
 export default async function BangXepHang() {
     const cookieStore = await cookies()
@@ -82,7 +86,7 @@ export default async function BangXepHang() {
     if (!decoded) redirect('/dang-nhap')
 
     const userRole = decoded.role
-    const rankings = await getCachedRankings()
+    const rankings = await getRankings()
 
     const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
