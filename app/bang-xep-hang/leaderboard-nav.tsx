@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
 
 interface LeaderboardNavProps {
     userRole?: string
@@ -9,22 +8,10 @@ interface LeaderboardNavProps {
 
 export default function LeaderboardNav({ userRole }: LeaderboardNavProps) {
     const router = useRouter()
-    const [canGoBack, setCanGoBack] = useState(false)
-
-    useEffect(() => {
-        // Kiểm tra xem có lịch sử browser để quay lại không
-        // Nếu có, dùng history.back() sẽ nhanh hơn redirect
-        setCanGoBack(window.history.length > 1)
-    }, [])
 
     const handleBack = () => {
-        if (canGoBack && window.history.length > 1) {
-            window.history.back()
-        } else {
-            // Fallback: dựa trên role quay lại trang chủ thích hợp
-            const fallbackRoute = userRole === 'admin' ? '/admin' : '/dashboard'
-            router.push(fallbackRoute)
-        }
+        const route = userRole === 'admin' ? '/admin' : '/dashboard'
+        router.push(route)
     }
 
     return (
