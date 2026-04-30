@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { unstable_cache } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import { verifyTokenString } from '@/lib/request-auth'
 import AdminActions from './admin-actions'
@@ -13,6 +14,34 @@ interface Stats {
     quizTitle: string
 }
 
+const getCachedAdminStats = unstable_cache(
+    async (): Promise<Stats> => {
+        const [usersResult, attemptsResult, quizSetResult] = await Promise.all([
+            supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true })
+                .eq('role', 'player'),
+            supabase
+                .from('attempts')
+                .select('*', { count: 'exact', head: true })
+                .not('finished_at', 'is', null),
+            supabase
+                .from('quiz_sets')
+                .select('title, is_active')
+                .eq('is_active', true)
+                .single(),
+        ])
+
+        return {
+            totalUsers: usersResult.count ?? 0,
+            totalAttempts: attemptsResult.count ?? 0,
+            quizActive: !!quizSetResult.data,
+            quizTitle: quizSetResult.data?.title ?? '',
+        }
+    },
+    ['admin-stats'],
+    { revalidate: 60 } // Cache 1 minute
+)
 export default async function AdminDashboard() {
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value || ''
@@ -21,28 +50,7 @@ export default async function AdminDashboard() {
     if (!decoded) redirect('/dang-nhap')
     if (decoded.role !== 'admin') redirect('/dashboard')
 
-    const [usersResult, attemptsResult, quizSetResult] = await Promise.all([
-    supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true })
-        .eq('role', 'player'),
-    supabase
-        .from('attempts')
-        .select('*', { count: 'exact', head: true })
-        .not('finished_at', 'is', null),
-    supabase
-        .from('quiz_sets')
-        .select('title, is_active')
-        .eq('is_active', true)
-        .single(),
-    ])
-
-    const stats: Stats = {
-    totalUsers: usersResult.count ?? 0,
-    totalAttempts: attemptsResult.count ?? 0,
-    quizActive: !!quizSetResult.data,
-    quizTitle: quizSetResult.data?.title ?? '',
-    }
+    const stats = await getCachedAdminStats()
 
     return (
     <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">

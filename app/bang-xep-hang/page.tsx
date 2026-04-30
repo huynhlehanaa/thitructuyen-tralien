@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { unstable_cache } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import { verifyTokenString } from '@/lib/request-auth'
+import LeaderboardNav from './leaderboard-nav'
 
 interface RankEntry {
     rank: number
@@ -81,6 +82,7 @@ export default async function BangXepHang() {
     const decoded = verifyTokenString(token)
     if (!decoded) redirect('/dang-nhap')
 
+    const userRole = decoded.role
     const rankings = await getCachedRankings()
 
     const formatTime = (seconds: number) => {
@@ -190,12 +192,7 @@ export default async function BangXepHang() {
         </p>
 
         <div className="mt-4 flex justify-center">
-            <a
-            href="/dashboard"
-            className="rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 border border-gray-200"
-            >
-            Quay lại
-            </a>
+            <LeaderboardNav userRole={userRole} />
         </div>
 
         </div>

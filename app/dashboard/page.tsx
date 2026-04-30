@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { unstable_cache } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import { verifyTokenString } from '@/lib/request-auth'
 import DashboardActions from './dashboard-actions'
@@ -30,6 +31,58 @@ type AttemptInfo = {
     total_attempts: number
 }
 
+const getCachedUserData = unstable_cache(
+    async (userId: string): Promise<User | null> => {
+        const { data } = await supabase
+            .from('users')
+            .select('id, phone, full_name, role, lien_doan, chi_doi, password_hash')
+            .eq('id', userId)
+            .single<User>()
+        return data
+    },
+    ['dashboard-user'],
+    { revalidate: 300 } // Cache 5 minutes
+)
+
+const getCachedQuizAndAttempts = unstable_cache(
+    async (userId: string): Promise<{ quizSet: QuizSet | null; attemptInfo: AttemptInfo | null }> => {
+        const { data: quizSet } = await supabase
+            .from('quiz_sets')
+            .select('id, title, exam_date, duration_seconds, is_active')
+            .eq('is_active', true)
+            .single<QuizSet>()
+
+        let attemptInfo: AttemptInfo | null = null
+        if (quizSet?.id) {
+            const { data: attempts } = await supabase
+                .from('attempts')
+                .select('score, time_spent_seconds, total_questions')
+                .eq('user_id', userId)
+                .eq('quiz_set_id', quizSet.id)
+                .not('finished_at', 'is', null)
+
+            if (attempts && attempts.length > 0) {
+                const bestAttempt = attempts.reduce((best, current) => {
+                    if (!best) return current
+                    if (current.score > best.score) return current
+                    if (current.score === best.score && current.time_spent_seconds < best.time_spent_seconds) return current
+                    return best
+                }, attempts[0])
+
+                attemptInfo = {
+                    quiz_set_id: quizSet.id,
+                    best_score: bestAttempt.score,
+                    total_attempts: attempts.length,
+                }
+            }
+        }
+
+        return { quizSet, attemptInfo }
+    },
+    ['dashboard-quiz-attempts'],
+    { revalidate: 60 } // Cache 1 minute
+)
+
 export default async function DashboardPage() {
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value || ''
@@ -38,47 +91,13 @@ export default async function DashboardPage() {
     if (!decoded) redirect('/dang-nhap')
     if (decoded.role === 'admin') redirect('/admin')
 
-    const { data: user } = await supabase
-        .from('users')
-        .select('id, phone, full_name, role, lien_doan, chi_doi, password_hash')
-        .eq('id', decoded.id)
-        .single<User>()
-
+    const user = await getCachedUserData(decoded.id)
     if (!user) redirect('/dang-nhap')
 
     const mustChangePassword = typeof user.password_hash === 'string' && user.password_hash.startsWith('TEMP$')
     if (mustChangePassword) redirect('/doi-mat-khau')
 
-    const { data: quizSet } = await supabase
-        .from('quiz_sets')
-        .select('id, title, exam_date, duration_seconds, is_active')
-        .eq('is_active', true)
-        .single<QuizSet>()
-
-    let attemptInfo: AttemptInfo | null = null
-    if (quizSet?.id) {
-        const { data: attempts } = await supabase
-            .from('attempts')
-            .select('score, time_spent_seconds, total_questions')
-            .eq('user_id', user.id)
-            .eq('quiz_set_id', quizSet.id)
-            .not('finished_at', 'is', null)
-
-        if (attempts && attempts.length > 0) {
-            const bestAttempt = attempts.reduce((best, current) => {
-                if (!best) return current
-                if (current.score > best.score) return current
-                if (current.score === best.score && current.time_spent_seconds < best.time_spent_seconds) return current
-                return best
-            }, attempts[0])
-
-            attemptInfo = {
-                quiz_set_id: quizSet.id,
-                best_score: bestAttempt.score,
-                total_attempts: attempts.length,
-            }
-        }
-    }
+    const { quizSet, attemptInfo } = await getCachedQuizAndAttempts(decoded.id)
 
     return (
         <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
