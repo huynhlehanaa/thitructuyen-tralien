@@ -1,10 +1,19 @@
 import { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
 
-type JwtPayload = {
+export type JwtPayload = {
     id: string
     role: string
     phone?: string
+}
+
+export function verifyTokenString(token: string): JwtPayload | null {
+    if (!token) return null
+    try {
+        return jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as JwtPayload
+    } catch {
+        return null
+    }
 }
 
 export function getRequestToken(req: NextRequest) {
@@ -15,21 +24,12 @@ export function getRequestToken(req: NextRequest) {
 
 export function verifyAdminRequest(req: NextRequest): JwtPayload | null {
     const token = getRequestToken(req)
-    if (!token) return null
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as JwtPayload
-        return decoded.role === 'admin' ? decoded : null
-    } catch {
-        return null
-    }
+    const decoded = verifyTokenString(token)
+    if (!decoded) return null
+    return decoded.role === 'admin' ? decoded : null
 }
 
 export function verifyUserRequest(req: NextRequest): JwtPayload | null {
     const token = getRequestToken(req)
-    if (!token) return null
-    try {
-        return jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as JwtPayload
-    } catch {
-        return null
-    }
+    return verifyTokenString(token)
 }

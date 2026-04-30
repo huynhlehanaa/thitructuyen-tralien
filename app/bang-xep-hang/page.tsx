@@ -21,6 +21,14 @@ export default function BangXepHang() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+    const cachedRankings = sessionStorage.getItem('player-rankings')
+    if (cachedRankings) {
+        try {
+        setRankings(JSON.parse(cachedRankings))
+        setLoading(false)
+        } catch {}
+    }
+
     fetchRankings()
     const interval = setInterval(() => fetchRankings(), 15000)
     return () => clearInterval(interval)
@@ -35,6 +43,7 @@ export default function BangXepHang() {
         }
         const data = await res.json()
         setRankings(data.rankings || [])
+        sessionStorage.setItem('player-rankings', JSON.stringify(data.rankings || []))
     } catch {
         toast.error('Lỗi tải bảng xếp hạng!')
     } finally {
