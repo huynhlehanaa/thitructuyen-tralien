@@ -1,8 +1,9 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import Image from 'next/image'
-import toast from 'react-hot-toast'
+import { unstable_cache } from 'next/cache'
+import { supabase } from '@/lib/supabase'
+import { verifyTokenString } from '@/lib/request-auth'
 
 interface RankEntry {
     rank: number
@@ -15,41 +16,72 @@ interface RankEntry {
     total_attempts: number
 }
 
-export default function BangXepHang() {
-    const router = useRouter()
-    const [rankings, setRankings] = useState<RankEntry[]>([])
-    const [loading, setLoading] = useState(true)
+const getCachedRankings = unstable_cache(
+    async (): Promise<RankEntry[]> => {
+    const { data: quizSet } = await supabase
+        .from('quiz_sets')
+        .select('id')
+        .eq('is_active', true)
+        .single()
 
-    useEffect(() => {
-    const cachedRankings = sessionStorage.getItem('player-rankings')
-    if (cachedRankings) {
-        try {
-        setRankings(JSON.parse(cachedRankings))
-        setLoading(false)
-        } catch {}
-    }
+    if (!quizSet?.id) return []
 
-    fetchRankings()
-    const interval = setInterval(() => fetchRankings(), 15000)
-    return () => clearInterval(interval)
-    }, [])
+    const { data: attempts } = await supabase
+        .from('attempts')
+        .select(`
+        user_id,
+        score,
+        time_spent_seconds,
+        total_questions,
+        users (full_name, lien_doan, chi_doi)
+        `)
+        .eq('quiz_set_id', quizSet.id)
+        .not('finished_at', 'is', null)
 
-    const fetchRankings = async () => {
-    try {
-        const res = await fetch('/api/leaderboard')
-        if (res.status === 401) {
-        router.push('/dang-nhap')
-        return
+    if (!attempts || attempts.length === 0) return []
+
+    const userMap: Record<string, Omit<RankEntry, 'rank'>> = {}
+
+    attempts.forEach((a: any) => {
+        const uid = a.user_id
+        if (!userMap[uid]) {
+        userMap[uid] = {
+            full_name: a.users?.full_name || '',
+            lien_doan: a.users?.lien_doan || '',
+            chi_doi: a.users?.chi_doi || '',
+            best_score: a.score,
+            total_questions: a.total_questions,
+            best_time: a.time_spent_seconds,
+            total_attempts: 1,
         }
-        const data = await res.json()
-        setRankings(data.rankings || [])
-        sessionStorage.setItem('player-rankings', JSON.stringify(data.rankings || []))
-    } catch {
-        toast.error('Lỗi tải bảng xếp hạng!')
-    } finally {
-        setLoading(false)
-    }
-    }
+        } else {
+        userMap[uid].total_attempts++
+        if (
+            a.score > userMap[uid].best_score ||
+            (a.score === userMap[uid].best_score && a.time_spent_seconds < userMap[uid].best_time)
+        ) {
+            userMap[uid].best_score = a.score
+            userMap[uid].best_time = a.time_spent_seconds
+            userMap[uid].total_questions = a.total_questions
+        }
+        }
+    })
+
+    return Object.values(userMap)
+        .sort((a, b) => b.best_score - a.best_score || a.best_time - b.best_time)
+        .map((r, idx) => ({ ...r, rank: idx + 1 }))
+    },
+    ['leaderboard-rankings'],
+    { revalidate: 5 }
+)
+
+export default async function BangXepHang() {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('token')?.value || ''
+    const decoded = verifyTokenString(token)
+    if (!decoded) redirect('/dang-nhap')
+
+    const rankings = await getCachedRankings()
 
     const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
@@ -116,9 +148,7 @@ export default function BangXepHang() {
                 <p className="text-red-700 font-bold">📋 Toàn bộ thí sinh ({rankings.length} người)</p>
             </div>
 
-            {loading ? (
-                <div className="p-8 text-center text-gray-600">Đang tải...</div>
-            ) : rankings.length === 0 ? (
+            {rankings.length === 0 ? (
                 <div className="p-8 text-center">
                 <p className="text-4xl mb-2">📭</p>
                 <p className="text-gray-600">Chưa có ai tham gia thi</p>
@@ -160,12 +190,12 @@ export default function BangXepHang() {
         </p>
 
         <div className="mt-4 flex justify-center">
-            <button
-            onClick={() => router.push('/dashboard')}
+            <a
+            href="/dashboard"
             className="rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 border border-gray-200"
             >
             Quay lại
-            </button>
+            </a>
         </div>
 
         </div>
