@@ -67,16 +67,6 @@ export default function DangKy() {
     return (
     <main className="h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-4 relative">
 
-        {/* Ảnh nền tối ưu */}
-        <Image
-        src="/img/nen.webp"
-        alt="background"
-        fill
-        priority
-        quality={75}
-        style={{ objectFit: 'cover', objectPosition: 'center' }}
-        />
-
         {/* Nội dung — z-10 để không bị ảnh che */}
         <div
         className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/95 p-8 shadow-2xl backdrop-blur-sm"
