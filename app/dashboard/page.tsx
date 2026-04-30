@@ -89,7 +89,7 @@ const getCachedQuizAndAttempts = unstable_cache(
         return { quizSet, attemptInfo }
     },
     ['dashboard-quiz-attempts'],
-    { revalidate: 0 } // Cache 1 minute
+    { revalidate: false } // Cache 1 minute
 )
 
 export default async function DashboardPage() {
