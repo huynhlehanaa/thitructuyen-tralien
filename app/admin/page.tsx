@@ -18,11 +18,6 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-    const token = localStorage.getItem('token')
-    const userData = localStorage.getItem('user')
-    if (!token || !userData) { router.push('/dang-nhap'); return }
-    const parsedUser = JSON.parse(userData)
-    if (parsedUser.role !== 'admin') { router.push('/dashboard'); return }
     const cachedStats = sessionStorage.getItem('admin-stats')
     if (cachedStats) {
         try {
@@ -30,14 +25,20 @@ export default function AdminDashboard() {
         setLoading(false)
         } catch {}
     }
-    fetchStats(token)
+    fetchStats()
     }, [])
 
-    const fetchStats = async (token: string) => {
+    const fetchStats = async () => {
     try {
-        const res = await fetch('/api/admin/stats', {
-        headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await fetch('/api/admin/stats')
+        if (res.status === 401) {
+        router.push('/dang-nhap')
+        return
+        }
+        if (res.status === 403) {
+        router.push('/dashboard')
+        return
+        }
         const data = await res.json()
         setStats(data)
         sessionStorage.setItem('admin-stats', JSON.stringify(data))

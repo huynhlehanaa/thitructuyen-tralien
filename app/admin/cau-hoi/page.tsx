@@ -20,7 +20,6 @@ function CauHoiContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const quizSetId = searchParams.get('quizSetId')
-    const [token, setToken] = useState('')
     const [questions, setQuestions] = useState<Question[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
@@ -35,19 +34,14 @@ function CauHoiContent() {
     })
 
     useEffect(() => {
-    const t = localStorage.getItem('token')
-    const u = localStorage.getItem('user')
-    if (!t || !u) { router.push('/dang-nhap'); return }
-    if (JSON.parse(u).role !== 'admin') { router.push('/dashboard'); return }
     if (!quizSetId) { router.push('/admin/bo-de'); return }
-    setToken(t)
-    fetchQuestions(t)
+    fetchQuestions()
     }, [])
 
-    const fetchQuestions = async (t: string) => {
-    const res = await fetch(`/api/admin/questions?quizSetId=${quizSetId}`, {
-        headers: { Authorization: `Bearer ${t}` }
-    })
+    const fetchQuestions = async () => {
+    const res = await fetch(`/api/admin/questions?quizSetId=${quizSetId}`)
+    if (res.status === 401) { router.push('/dang-nhap'); return }
+    if (res.status === 403) { router.push('/dashboard'); return }
     const data = await res.json()
     setQuestions(data.questions || [])
     setLoading(false)
@@ -68,13 +62,13 @@ function CauHoiContent() {
     const method = editId ? 'PUT' : 'POST'
     const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, quiz_set_id: quizSetId, order_index: questions.length + 1 })
     })
     if (res.ok) {
         toast.success(editId ? 'Cập nhật thành công!' : 'Thêm câu hỏi thành công!')
         resetForm()
-        fetchQuestions(token)
+        fetchQuestions()
     } else {
         toast.error('Thao tác thất bại!')
     }
@@ -96,12 +90,11 @@ function CauHoiContent() {
     const handleDelete = async (id: string) => {
     if (!confirm('Xác nhận xóa câu hỏi này?')) return
     const res = await fetch(`/api/admin/questions/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        method: 'DELETE'
     })
     if (res.ok) {
         toast.success('Đã xóa!')
-        fetchQuestions(token)
+        fetchQuestions()
     }
     }
 

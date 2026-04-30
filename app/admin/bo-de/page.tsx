@@ -14,7 +14,6 @@ interface QuizSet {
 
 export default function AdminBoDe() {
     const router = useRouter()
-    const [token, setToken] = useState('')
     const [quizSets, setQuizSets] = useState<QuizSet[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
@@ -25,11 +24,6 @@ export default function AdminBoDe() {
     })
 
     useEffect(() => {
-    const t = localStorage.getItem('token')
-    const u = localStorage.getItem('user')
-    if (!t || !u) { router.push('/dang-nhap'); return }
-    if (JSON.parse(u).role !== 'admin') { router.push('/dashboard'); return }
-    setToken(t)
     const cachedQuizSets = sessionStorage.getItem('admin-quiz-sets')
     if (cachedQuizSets) {
         try {
@@ -37,13 +31,13 @@ export default function AdminBoDe() {
         setLoading(false)
         } catch {}
     }
-    fetchQuizSets(t)
+    fetchQuizSets()
     }, [])
 
-    const fetchQuizSets = async (t: string) => {
-    const res = await fetch('/api/admin/quiz-sets', {
-        headers: { Authorization: `Bearer ${t}` }
-    })
+    const fetchQuizSets = async () => {
+    const res = await fetch('/api/admin/quiz-sets')
+    if (res.status === 401) { router.push('/dang-nhap'); return }
+    if (res.status === 403) { router.push('/dashboard'); return }
     const data = await res.json()
     setQuizSets(data.quizSets || [])
     sessionStorage.setItem('admin-quiz-sets', JSON.stringify(data.quizSets || []))
@@ -57,14 +51,14 @@ export default function AdminBoDe() {
     }
     const res = await fetch('/api/admin/quiz-sets', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
     })
     if (res.ok) {
         toast.success('Tạo bộ đề thành công!')
         setShowForm(false)
         setForm({ title: '', exam_date: '', duration_seconds: 600 })
-        fetchQuizSets(token)
+        fetchQuizSets()
     } else {
         toast.error('Tạo thất bại!')
     }
@@ -73,12 +67,12 @@ export default function AdminBoDe() {
     const handleToggle = async (id: string, current: boolean) => {
     const res = await fetch(`/api/admin/quiz-sets/${id}/toggle`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: !current })
     })
     if (res.ok) {
         toast.success(current ? 'Đã tắt bộ đề!' : 'Đã bật bộ đề!')
-        fetchQuizSets(token)
+        fetchQuizSets()
     }
     }
 

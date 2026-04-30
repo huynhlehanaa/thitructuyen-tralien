@@ -18,18 +18,12 @@ interface User {
 
 export default function AdminNguoiDung() {
     const router = useRouter()
-    const [token, setToken] = useState('')
     const [users, setUsers] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [actionLoading, setActionLoading] = useState<string | null>(null)
 
     useEffect(() => {
-    const t = localStorage.getItem('token')
-    const u = localStorage.getItem('user')
-    if (!t || !u) { router.push('/dang-nhap'); return }
-    if (JSON.parse(u).role !== 'admin') { router.push('/dashboard'); return }
-    setToken(t)
     const cachedUsers = sessionStorage.getItem('admin-users')
     if (cachedUsers) {
         try {
@@ -37,14 +31,14 @@ export default function AdminNguoiDung() {
         setLoading(false)
         } catch {}
     }
-    fetchUsers(t)
+    fetchUsers()
     }, [])
 
-    const fetchUsers = async (t: string) => {
+    const fetchUsers = async () => {
     try {
-        const res = await fetch('/api/admin/users', {
-        headers: { Authorization: `Bearer ${t}` }
-        })
+        const res = await fetch('/api/admin/users')
+        if (res.status === 401) { router.push('/dang-nhap'); return }
+        if (res.status === 403) { router.push('/dashboard'); return }
         const data = await res.json()
         setUsers(data.users || [])
         sessionStorage.setItem('admin-users', JSON.stringify(data.users || []))
@@ -62,12 +56,11 @@ export default function AdminNguoiDung() {
     try {
         const res = await fetch(`/api/admin/users/${userId}/reset`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
         })
         const data = await res.json()
         if (res.ok) {
         toast.success(data.tempPassword ? `${data.message} Mật khẩu tạm: ${data.tempPassword}` : data.message)
-        fetchUsers(token)
+        fetchUsers()
         } else {
         toast.error(data.error || 'Lỗi reset mật khẩu!')
         }
@@ -85,7 +78,6 @@ export default function AdminNguoiDung() {
     try {
         const res = await fetch(`/api/admin/users/${userId}/delete`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
         })
         const data = await res.json()
         if (res.ok) {
