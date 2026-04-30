@@ -93,12 +93,11 @@ export default async function BangXepHang() {
     const medalColors = ['🥇', '🥈', '🥉']
 
     return (
-    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
+    <main className="min-h-screen px-4 py-6 sm:py-8 flex items-center justify-center relative">
 
         {/* Nội dung */}
         <div
-        className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden"
-        style={{ marginLeft: '22%', width: '56%', height: '98%' }}
+        className="relative z-10 w-full max-w-6xl lg:max-w-none lg:w-[56%] lg:ml-[22%] rounded-[2rem] border border-white/60 bg-white/90 p-4 sm:p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden h-[92vh]"
         >
 
         {/* Header */}
@@ -110,7 +109,7 @@ export default async function BangXepHang() {
 
             {/* Top 3 */}
             {rankings.length >= 3 && (
-            <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="hidden md:grid grid-cols-3 gap-3 mb-6">
                 {[rankings[1], rankings[0], rankings[2]].map((r, i) => {
                 const positions = [1, 0, 2]
                 const pos = positions[i]
@@ -149,7 +148,7 @@ export default async function BangXepHang() {
                 {rankings.map((r) => (
                     <div
                     key={r.rank}
-                    className={`flex items-center gap-3 px-4 py-3 ${r.rank <= 3 ? 'bg-yellow-50' : ''}`}
+                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 ${r.rank <= 3 ? 'bg-yellow-50' : ''}`}
                     >
                     <div className="w-8 text-center shrink-0">
                         {r.rank <= 3
@@ -165,7 +164,7 @@ export default async function BangXepHang() {
                         <p className="text-yellow-600 font-bold">{r.best_score}/{r.total_questions}</p>
                         <p className="text-gray-500 text-xs">{formatTime(r.best_time)}</p>
                     </div>
-                    <div className="text-center shrink-0 w-12">
+                    <div className="text-center shrink-0 w-14">
                         <p className="text-gray-500 text-xs">{r.total_attempts} lượt</p>
                     </div>
                     </div>

@@ -57,12 +57,11 @@ export default function DangNhap() {
     }
 
     return (
-    <main className="h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-4 relative">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-6 sm:py-8 relative">
 
         {/* Nội dung */}
         <div
-        className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/95 p-8 shadow-2xl backdrop-blur-sm"
-        style={{ marginLeft: '22%', width: '30%' }}
+        className="relative z-10 w-full max-w-md lg:max-w-none lg:w-[30%] lg:ml-[22%] rounded-[2rem] border border-white/60 bg-white/95 p-5 sm:p-8 shadow-2xl backdrop-blur-sm"
         >
         <div className="text-center mb-5">
             <div className="text-4xl mb-2">🔐</div>

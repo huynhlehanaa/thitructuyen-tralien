@@ -15,16 +15,16 @@ export default function DashboardActions() {
     }
 
     return (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
             <button
                 onClick={() => router.push('/doi-mat-khau')}
-                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-500 transition shadow"
+                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm hover:bg-blue-500 transition shadow"
             >
                 🔐 Đổi mật khẩu
             </button>
             <button
                 onClick={handleLogout}
-                className="bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-600 transition shadow"
+                className="bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm hover:bg-red-600 transition shadow"
             >
                 Đăng xuất
             </button>

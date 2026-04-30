@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 interface User {
@@ -101,16 +100,8 @@ export default function AdminNguoiDung() {
     )
 
     return (
-    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
-        <Image
-        src="/img/nen.png"
-        alt="background"
-        fill
-        priority
-        quality={75}
-        style={{ objectFit: 'cover', objectPosition: 'center' }}
-        />
-        <div className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden" style={{ marginLeft: '22%', width: '56%', height: '98%' }}>
+    <main className="min-h-screen px-4 py-6 sm:py-8 flex items-center justify-center relative">
+        <div className="relative z-10 w-full max-w-6xl lg:max-w-none lg:w-[56%] lg:ml-[22%] rounded-[2rem] border border-white/60 bg-white/90 p-4 sm:p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden h-[92vh]">
 
         <div className="flex items-start justify-between gap-4 mb-5">
             <div>
@@ -155,9 +146,9 @@ export default function AdminNguoiDung() {
             <p className="text-gray-500">Không tìm thấy người dùng nào</p>
             </div>
         ) : (
-            <div className="bg-white rounded-2xl shadow overflow-hidden border border-red-100">
+            <div className="bg-white rounded-2xl shadow border border-red-100 overflow-x-auto">
             {/* Header bảng */}
-            <div className="grid grid-cols-14 gap-2 px-4 py-3 bg-red-50 border-b border-red-100 text-xs font-bold text-gray-500 uppercase">
+            <div className="grid min-w-[760px] grid-cols-14 gap-2 px-4 py-3 bg-red-50 border-b border-red-100 text-xs font-bold text-gray-500 uppercase">
                 <div className="col-span-1">STT</div>
                 <div className="col-span-3">Họ tên</div>
                 <div className="col-span-4">Liên đội</div>
@@ -167,7 +158,7 @@ export default function AdminNguoiDung() {
             </div>
 
             {/* Rows */}
-            <div className="divide-y divide-red-100">
+            <div className="divide-y divide-red-100 min-w-[760px]">
                 {filtered
                 .filter(u => u.role === 'player')
                 .map((u, idx) => (

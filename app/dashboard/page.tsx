@@ -102,10 +102,10 @@ export default async function DashboardPage() {
     if (mustChangePassword) redirect('/doi-mat-khau')
 
     return (
-        <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
+        <main className="min-h-screen px-4 py-6 sm:py-8 flex items-center justify-center relative">
 
-            <div className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm" style={{ marginLeft: '22%', width: '52%' }}>
-                <div className="flex justify-between items-center mb-5">
+            <div className="relative z-10 w-full max-w-5xl lg:max-w-none lg:w-[52%] lg:ml-[22%] rounded-[2rem] border border-white/60 bg-white/90 p-4 sm:p-6 shadow-2xl backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
                     <h1 className="text-red-700 font-bold text-lg">🌟 Thi Trực Tuyến Xã Trà Liên</h1>
                     <DashboardActions />
                 </div>

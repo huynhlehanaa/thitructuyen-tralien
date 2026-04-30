@@ -114,15 +114,15 @@ export default function ThiPage() {
     if (submitted && result) {
     const percent = Math.round((result.score / result.total) * 100)
     return (
-        <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
-        <div className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-8 shadow-2xl backdrop-blur-sm text-center" style={{ marginLeft: '22%', width: '40%' }}>
+        <main className="min-h-screen px-4 py-6 sm:py-8 flex items-center justify-center relative">
+        <div className="relative z-10 w-full max-w-xl lg:max-w-none lg:w-[40%] lg:ml-[22%] rounded-[2rem] border border-white/60 bg-white/90 p-5 sm:p-8 shadow-2xl backdrop-blur-sm text-center">
             <div className="text-6xl mb-4">{percent >= 80 ? '🏆' : percent >= 50 ? '👍' : '📚'}</div>
             <h1 className="text-2xl font-bold text-red-700 mb-2">Kết Quả Bài Thi</h1>
             <div className="bg-white rounded-2xl border border-red-100 p-6 mb-6 shadow-sm">
             <p className="text-gray-500 text-sm">Tỉ lệ đúng</p>
             <p className="text-5xl font-bold text-red-700 mt-2">{percent}%</p>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-6 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-sm">
             <div className="bg-white rounded-2xl p-4 border border-red-100 shadow-sm">
                 <p className="text-gray-500">Thời gian làm</p>
                 <p className="font-bold text-gray-800 mt-1">{formatTime(result.timeSpent)}</p>
@@ -153,7 +153,7 @@ export default function ThiPage() {
 
     if (loading) {
     return (
-        <div className="h-screen overflow-hidden flex items-center justify-center relative">
+        <div className="min-h-screen flex items-center justify-center relative px-4">
         <div className="relative z-10 text-white text-xl font-bold">Đang tải bài thi...</div>
         </div>
     )
