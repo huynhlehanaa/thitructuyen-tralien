@@ -28,22 +28,20 @@ export default function Home() {
       {/* Mobile */}
       <div className="md:hidden flex flex-col h-full bg-[#0f2347]">
 
-        {/* Ảnh hiện toàn bộ, không crop */}
-        <div className="flex items-center justify-center px-3 pt-4" style={{ height: '62%' }}>
-          <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl" style={{ aspectRatio: '16/9' }}>
-            <Image
-              src="/img/background-mobile.webp"
-              alt="Thi Trực Tuyến Trà Liên"
-              fill
-              priority
-              quality={75}
-              style={{ objectFit: 'cover', objectPosition: 'center' }}
-            />
-          </div>
+        {/* Ảnh chiếm toàn bộ phần trên */}
+        <div className="relative w-full flex-1">
+          <Image
+            src="/img/background-mobile.webp"
+            alt="Thi Trực Tuyến Trà Liên"
+            fill
+            priority
+            quality={75}
+            style={{ objectFit: 'cover', objectPosition: 'center' }}
+          />
         </div>
 
-        {/* Nút bấm */}
-        <div className="flex flex-col items-center justify-center gap-3 px-6 flex-1">
+        {/* Nút bấm phía dưới */}
+        <div className="flex flex-col gap-3 px-6 py-6 bg-[#0f2347]">
           <Link
             href="/dang-nhap"
             className="w-full bg-yellow-400 text-red-900 font-bold py-4 rounded-xl text-center text-lg shadow-xl active:scale-95 transition"
@@ -52,7 +50,7 @@ export default function Home() {
           </Link>
           <Link
             href="/dang-ky"
-            className="w-full bg-white text-red-700 font-bold py-4 rounded-xl text-center text-lg shadow-xl active:scale-95 transition border border-gray-100"
+            className="w-full bg-white text-red-700 font-bold py-4 rounded-xl text-center text-lg shadow-xl active:scale-95 transition"
           >
             📝 Đăng Ký
           </Link>
