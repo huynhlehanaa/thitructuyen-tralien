@@ -34,13 +34,21 @@ export default function DangNhap() {
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(data.user))
         toast.success('Đăng nhập thành công!')
-        if (data.user.role === 'admin') {
-            router.push('/admin')
-        } else if (data.user.must_change_password) {
-            router.push('/doi-mat-khau')
-        } else {
-            router.push('/dashboard')
-        }
+        
+        // Pre-warm cache trước redirect
+        fetch('/api/auth/warm-up', { method: 'POST' }).catch(() => {})
+        
+        const redirectDelay = setTimeout(() => {
+            if (data.user.role === 'admin') {
+                router.push('/admin')
+            } else if (data.user.must_change_password) {
+                router.push('/doi-mat-khau')
+            } else {
+                router.push('/dashboard')
+            }
+        }, 300)
+        
+        return () => clearTimeout(redirectDelay)
         }
     } catch {
         toast.error('Lỗi kết nối!')

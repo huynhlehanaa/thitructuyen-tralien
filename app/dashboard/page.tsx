@@ -91,13 +91,16 @@ export default async function DashboardPage() {
     if (!decoded) redirect('/dang-nhap')
     if (decoded.role === 'admin') redirect('/admin')
 
-    const user = await getCachedUserData(decoded.id)
+    // Lấy user data và quiz data song song
+    const [user, { quizSet, attemptInfo }] = await Promise.all([
+        getCachedUserData(decoded.id),
+        getCachedQuizAndAttempts(decoded.id)
+    ])
+
     if (!user) redirect('/dang-nhap')
 
     const mustChangePassword = typeof user.password_hash === 'string' && user.password_hash.startsWith('TEMP$')
     if (mustChangePassword) redirect('/doi-mat-khau')
-
-    const { quizSet, attemptInfo } = await getCachedQuizAndAttempts(decoded.id)
 
     return (
         <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
