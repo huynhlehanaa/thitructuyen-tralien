@@ -71,6 +71,14 @@ export async function POST(
     .eq('user_id', userId)
     .eq('quiz_set_id', id)
 
+    // Giới hạn 5 lượt
+    const MAX_ATTEMPTS = 5
+    if ((count || 0) >= MAX_ATTEMPTS) {
+        return NextResponse.json({ 
+            error: `Bạn đã dùng hết ${MAX_ATTEMPTS} lượt thi cho bài này!` 
+        }, { status: 403 })
+    }
+
     // Tạo lượt thi mới
     const { data: attempt } = await supabase
     .from('attempts')

@@ -83,23 +83,28 @@ export default function ThiPage() {
     }, [])
 
     const startAttempt = async () => {
-    try {
-        const res = await fetch(`/api/quiz/${quizSetId}/start`, {
-        method: 'POST'
-        })
-        const data = await res.json()
-        if (res.status === 401) { router.push('/dang-nhap'); return }
-        if (!res.ok) { toast.error(data.error || 'Lỗi!'); router.push('/dashboard'); return }
-        setQuizSet(data.quizSet)
-        setQuestions(data.questions)
-        setAttemptId(data.attemptId)
-        setTimeLeft(data.quizSet.duration_seconds)
-    } catch {
-        toast.error('Lỗi tải bài thi!')
-        router.push('/dashboard')
-    } finally {
-        setLoading(false)
-    }
+        try {
+            const res = await fetch(`/api/quiz/${quizSetId}/start`, {
+            method: 'POST'
+            })
+            const data = await res.json()
+            if (res.status === 401) { router.push('/dang-nhap'); return }
+            if (res.status === 403) { 
+            toast.error(data.error || 'Đã hết lượt thi!')
+            router.push('/dashboard')
+            return 
+            }
+            if (!res.ok) { toast.error(data.error || 'Lỗi!'); router.push('/dashboard'); return }
+            setQuizSet(data.quizSet)
+            setQuestions(data.questions)
+            setAttemptId(data.attemptId)
+            setTimeLeft(data.quizSet.duration_seconds)
+        } catch {
+            toast.error('Lỗi tải bài thi!')
+            router.push('/dashboard')
+        } finally {
+            setLoading(false)
+        }
     }
 
     const formatTime = (seconds: number) => {

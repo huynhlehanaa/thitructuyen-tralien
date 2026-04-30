@@ -53,33 +53,43 @@ const getCachedQuizAndAttempts = unstable_cache(
 
         let attemptInfo: AttemptInfo | null = null
         if (quizSet?.id) {
-            const { data: attempts } = await supabase
-                .from('attempts')
-                .select('score, time_spent_seconds, total_questions')
-                .eq('user_id', userId)
-                .eq('quiz_set_id', quizSet.id)
-                .not('finished_at', 'is', null)
+        // Query riêng đếm TỔNG lượt (kể cả chưa nộp)
+        const { count: totalCount } = await supabase
+            .from('attempts')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('quiz_set_id', quizSet.id)
 
-            if (attempts && attempts.length > 0) {
-                const bestAttempt = attempts.reduce((best, current) => {
+        // Query lấy điểm cao nhất (chỉ lượt đã nộp)
+        const { data: attempts } = await supabase
+            .from('attempts')
+            .select('score, time_spent_seconds, total_questions')
+            .eq('user_id', userId)
+            .eq('quiz_set_id', quizSet.id)
+            .not('finished_at', 'is', null)
+
+        if (totalCount && totalCount > 0) {
+            const bestAttempt = attempts && attempts.length > 0
+                ? attempts.reduce((best, current) => {
                     if (!best) return current
                     if (current.score > best.score) return current
                     if (current.score === best.score && current.time_spent_seconds < best.time_spent_seconds) return current
                     return best
                 }, attempts[0])
+                : null
 
-                attemptInfo = {
-                    quiz_set_id: quizSet.id,
-                    best_score: bestAttempt.score,
-                    total_attempts: attempts.length,
-                }
+            attemptInfo = {
+                quiz_set_id: quizSet.id,
+                best_score: bestAttempt?.score ?? 0,
+                total_attempts: totalCount,
             }
         }
+    }
 
         return { quizSet, attemptInfo }
     },
     ['dashboard-quiz-attempts'],
-    { revalidate: 60 } // Cache 1 minute
+    { revalidate: 0 } // Cache 1 minute
 )
 
 export default async function DashboardPage() {
@@ -142,23 +152,38 @@ export default async function DashboardPage() {
                 <div className="bg-white rounded-2xl p-5 mb-4 shadow-lg border border-red-100">
                     <h2 className="font-bold text-red-700 text-lg mb-3">📋 Bài Thi</h2>
                     {quizSet ? (
-                        <div>
-                            <p className="text-gray-800 font-medium mb-1">{quizSet.title}</p>
-                            <p className="text-gray-500 text-sm mb-4">
-                                ⏱ Thời gian: {Math.floor(quizSet.duration_seconds / 60)} phút
-                            </p>
-                            <Link
-                                href={`/thi/${quizSet.id}`}
-                                className="block bg-yellow-400 text-red-900 font-bold py-3 rounded-xl text-center hover:bg-yellow-300 transition shadow"
-                            >
-                                {attemptInfo && attemptInfo.total_attempts > 0 ? 'Thi Lại' : 'Bắt Đầu Thi'}
-                            </Link>
+                    <div>
+                        <p className="text-gray-800 font-medium mb-1">{quizSet.title}</p>
+                        <p className="text-gray-500 text-sm mb-1">
+                        ⏱ Thời gian: {Math.floor(quizSet.duration_seconds / 60)} phút
+                        </p>
+                        <p className="text-gray-500 text-sm mb-4">
+                        🎯 Lượt thi: {attemptInfo?.total_attempts ?? 0}/5
+                        {(attemptInfo?.total_attempts ?? 0) >= 5 && 
+                            <span className="text-red-600 font-bold ml-2">— Đã hết lượt!</span>
+                        }
+                        </p>
+                        {(attemptInfo?.total_attempts ?? 0) >= 5 ? (
+                        <div className="bg-gray-100 text-gray-500 font-bold py-3 rounded-xl text-center border border-gray-200">
+                            🔒 Đã dùng hết 5 lượt thi
                         </div>
+                        ) : (
+                        <Link
+                            href={`/thi/${quizSet.id}`}
+                            className="block bg-yellow-400 text-red-900 font-bold py-3 rounded-xl text-center hover:bg-yellow-300 transition shadow"
+                        >
+                            {attemptInfo && attemptInfo.total_attempts > 0 ? 
+                            `🔄 Thi Lại (còn ${5 - attemptInfo.total_attempts} lượt)` : 
+                            '🚀 Bắt Đầu Thi'
+                            }
+                        </Link>
+                        )}
+                    </div>
                     ) : (
-                        <div className="text-center py-6">
-                            <p className="text-4xl mb-2">📭</p>
-                            <p className="text-gray-600">Chưa có bài thi nào được mở</p>
-                        </div>
+                    <div className="text-center py-6">
+                        <p className="text-4xl mb-2">📭</p>
+                        <p className="text-gray-600">Chưa có bài thi nào được mở</p>
+                    </div>
                     )}
                 </div>
 
