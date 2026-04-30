@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import jwt from 'jsonwebtoken'
-
-function verifyAdmin(req: NextRequest) {
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!token) return null
-    try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as { role: string }
-    return decoded.role === 'admin' ? decoded : null
-    } catch { return null }
-}
+import { verifyAdminRequest } from '@/lib/request-auth'
 
 export async function GET(req: NextRequest) {
-    if (!verifyAdmin(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
+    if (!verifyAdminRequest(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
     const { searchParams } = new URL(req.url)
     const quizSetId = searchParams.get('quizSetId')
     const { data: questions } = await supabase
@@ -24,7 +15,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    if (!verifyAdmin(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
+    if (!verifyAdminRequest(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
     const body = await req.json()
     const { data, error } = await supabase
     .from('questions')

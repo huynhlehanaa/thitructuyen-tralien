@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import jwt from 'jsonwebtoken'
+import { verifyAdminRequest } from '@/lib/request-auth'
 
 export async function POST(
     req: NextRequest,
@@ -8,15 +8,7 @@ export async function POST(
     ) {
     const { id } = await params
 
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
-
-    try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as { role: string }
-    if (decoded.role !== 'admin') return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
-    } catch {
-    return NextResponse.json({ error: 'Token lỗi!' }, { status: 401 })
-    }
+    if (!verifyAdminRequest(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
 
     const { is_active } = await req.json()
 

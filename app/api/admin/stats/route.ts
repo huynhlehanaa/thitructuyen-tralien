@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import jwt from 'jsonwebtoken'
+import { verifyAdminRequest } from '@/lib/request-auth'
 
 export async function GET(req: NextRequest) {
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
-
-    try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as { role: string }
-    if (decoded.role !== 'admin') return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
-    } catch {
-    return NextResponse.json({ error: 'Token không hợp lệ!' }, { status: 401 })
-    }
+    if (!verifyAdminRequest(req)) return NextResponse.json({ error: 'Không có quyền!' }, { status: 403 })
 
     const [usersResult, attemptsResult, quizSetResult] = await Promise.all([
     supabase
