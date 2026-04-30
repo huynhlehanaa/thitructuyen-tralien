@@ -91,7 +91,6 @@ function CauHoiContent() {
     })
     setEditId(q.id)
     setShowForm(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
     const handleDelete = async (id: string) => {
@@ -147,11 +146,11 @@ function CauHoiContent() {
             {showForm && !editId ? '✕ Đóng' : '+ Thêm Câu Hỏi Mới'}
             </button>
 
-            {/* Form thêm/sửa */}
-            {showForm && (
+            {/* Form thêm */}
+            {showForm && !editId && (
             <div className="bg-white rounded-2xl p-6 shadow mb-6 border border-red-100">
                 <h2 className="font-bold text-gray-800 mb-4">
-                {editId ? '✏️ Sửa câu hỏi' : '➕ Thêm câu hỏi mới'}
+                ➕ Thêm câu hỏi mới
                 </h2>
                 <div className="flex flex-col gap-4">
                 <div>
@@ -250,6 +249,74 @@ function CauHoiContent() {
                     </div>
                     </div>
 
+                    {editId === q.id ? (
+                    <div className="bg-red-50 rounded-2xl p-4 border border-red-200">
+                        <h2 className="font-bold text-gray-800 mb-4">✏️ Sửa câu hỏi tại chỗ</h2>
+                        <div className="flex flex-col gap-4">
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 mb-1 block">Nội dung câu hỏi</label>
+                            <textarea
+                            rows={3}
+                            placeholder="Nhập câu hỏi..."
+                            value={form.question_text}
+                            onChange={e => setForm({ ...form, question_text: e.target.value })}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800 resize-none"
+                            />
+                        </div>
+
+                        {(['A', 'B', 'C', 'D'] as const).map(opt => (
+                            <div key={opt}>
+                            <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                Đáp án {opt}
+                                {form.correct_answer === opt && <span className="ml-2 text-green-600">✓ Đúng</span>}
+                            </label>
+                            <input
+                                type="text"
+                                placeholder={`Nhập đáp án ${opt}...`}
+                                value={form[`option_${opt.toLowerCase()}` as keyof typeof form]}
+                                onChange={e => setForm({ ...form, [`option_${opt.toLowerCase()}`]: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+                            />
+                            </div>
+                        ))}
+
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 mb-2 block">Đáp án đúng</label>
+                            <div className="grid grid-cols-4 gap-2">
+                            {(['A', 'B', 'C', 'D'] as const).map(opt => (
+                                <button
+                                key={opt}
+                                onClick={() => setForm({ ...form, correct_answer: opt })}
+                                className={`py-3 rounded-xl font-bold text-lg transition ${
+                                    form.correct_answer === opt
+                                    ? 'bg-green-600 text-white shadow-md scale-105'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                                >
+                                {opt}
+                                </button>
+                            ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                            onClick={handleSubmit}
+                            className="flex-1 bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition"
+                            >
+                            Cập Nhật
+                            </button>
+                            <button
+                            onClick={resetForm}
+                            className="px-6 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition"
+                            >
+                            Hủy
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                    ) : (
+                    <>
                     <p className="text-gray-800 font-medium mb-3">{q.question_text}</p>
 
                     <div className="grid grid-cols-1 gap-2">
@@ -268,6 +335,8 @@ function CauHoiContent() {
                         </div>
                     ))}
                     </div>
+                    </>
+                    )}
                 </div>
                 ))}
             </div>

@@ -33,8 +33,16 @@ export async function dangNhap(phone: string, password: string) {
 
     if (error || !user) return { error: 'Số điện thoại không tồn tại!' }
 
-    const isValid = await bcrypt.compare(password, user.password_hash)
+    const isTemporaryPassword = typeof user.password_hash === 'string' && user.password_hash.startsWith('TEMP$')
+    const passwordHash = isTemporaryPassword ? user.password_hash.slice(5) : user.password_hash
+    const isValid = await bcrypt.compare(password, passwordHash)
     if (!isValid) return { error: 'Mật khẩu không đúng!' }
 
-    return { data: user }
+    return {
+    data: {
+        ...user,
+        must_change_password: isTemporaryPassword,
+        password_hash: passwordHash,
+    },
+    }
 }

@@ -22,6 +22,7 @@ export default function AdminNguoiDung() {
     const [users, setUsers] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
+    const [actionLoading, setActionLoading] = useState<string | null>(null)
 
     useEffect(() => {
     const t = localStorage.getItem('token')
@@ -43,6 +44,52 @@ export default function AdminNguoiDung() {
         toast.error('Lỗi tải dữ liệu!')
     } finally {
         setLoading(false)
+    }
+    }
+
+    const handleReset = async (userId: string, fullName: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn reset mật khẩu của ${fullName}?\nHệ thống sẽ tạo mật khẩu tạm và bắt buộc người dùng đổi mật khẩu khi đăng nhập lại.`)) return
+    
+    setActionLoading(userId)
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/reset`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+        })
+        const data = await res.json()
+        if (res.ok) {
+        toast.success(data.tempPassword ? `${data.message} Mật khẩu tạm: ${data.tempPassword}` : data.message)
+        fetchUsers(token)
+        } else {
+        toast.error(data.error || 'Lỗi reset mật khẩu!')
+        }
+    } catch {
+        toast.error('Lỗi kết nối!')
+    } finally {
+        setActionLoading(null)
+    }
+    }
+
+    const handleDelete = async (userId: string, fullName: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn XÓA tài khoản của ${fullName}?\nHành động này không thể hoàn tác!`)) return
+    
+    setActionLoading(userId)
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/delete`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+        })
+        const data = await res.json()
+        if (res.ok) {
+        toast.success('Xóa tài khoản thành công!')
+        setUsers(users.filter(u => u.id !== userId))
+        } else {
+        toast.error(data.error || 'Lỗi xóa tài khoản!')
+        }
+    } catch {
+        toast.error('Lỗi kết nối!')
+    } finally {
+        setActionLoading(null)
     }
     }
 
@@ -110,12 +157,13 @@ export default function AdminNguoiDung() {
         ) : (
             <div className="bg-white rounded-2xl shadow overflow-hidden border border-red-100">
             {/* Header bảng */}
-            <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-red-50 border-b border-red-100 text-xs font-bold text-gray-500 uppercase">
+            <div className="grid grid-cols-14 gap-2 px-4 py-3 bg-red-50 border-b border-red-100 text-xs font-bold text-gray-500 uppercase">
                 <div className="col-span-1">STT</div>
                 <div className="col-span-3">Họ tên</div>
                 <div className="col-span-4">Liên đội</div>
                 <div className="col-span-2 text-center">Lượt thi</div>
                 <div className="col-span-2 text-center">Điểm cao</div>
+                <div className="col-span-2 text-center">Hành động</div>
             </div>
 
             {/* Rows */}
@@ -123,7 +171,7 @@ export default function AdminNguoiDung() {
                 {filtered
                 .filter(u => u.role === 'player')
                 .map((u, idx) => (
-                <div key={u.id} className="grid grid-cols-12 gap-2 px-4 py-3 hover:bg-yellow-50 transition items-center">
+                <div key={u.id} className="grid grid-cols-14 gap-2 px-4 py-3 hover:bg-yellow-50 transition items-center">
                     <div className="col-span-1 text-gray-400 text-sm font-medium">{idx + 1}</div>
                     <div className="col-span-3">
                     <p className="font-medium text-gray-800 text-sm truncate">{u.full_name}</p>
@@ -150,6 +198,22 @@ export default function AdminNguoiDung() {
                     ) : (
                         <span className="text-gray-300">—</span>
                     )}
+                    </div>
+                    <div className="col-span-2 flex gap-1 justify-center">
+                    <button
+                        onClick={() => handleReset(u.id, u.full_name)}
+                        disabled={actionLoading === u.id}
+                        className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white text-xs px-2 py-1 rounded transition"
+                    >
+                        {actionLoading === u.id ? '...' : '🔄 Reset'}
+                    </button>
+                    <button
+                        onClick={() => handleDelete(u.id, u.full_name)}
+                        disabled={actionLoading === u.id}
+                        className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white text-xs px-2 py-1 rounded transition"
+                    >
+                        {actionLoading === u.id ? '...' : '🗑️ Xóa'}
+                    </button>
                     </div>
                 </div>
                 ))}

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     const { data: attempts } = await supabase
     .from('attempts')
-    .select('score, time_spent_seconds')
+    .select('score, time_spent_seconds, total_questions')
     .eq('user_id', userId)
     .eq('quiz_set_id', quizSetId)
     .not('finished_at', 'is', null)
@@ -30,12 +30,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(null, { status: 200 })
     }
 
-    const bestScore = Math.max(...attempts.map(a => a.score))
-    const totalAttempts = attempts.length
+    const bestAttempt = attempts.reduce((best, current) => {
+    if (!best) return current
+    if (current.score > best.score) return current
+    if (current.score === best.score && current.time_spent_seconds < best.time_spent_seconds) return current
+    return best
+    }, attempts[0])
 
     return NextResponse.json({
     quiz_set_id: quizSetId,
-    best_score: bestScore,
-    total_attempts: totalAttempts
+    best_score: bestAttempt.score,
+    best_time: bestAttempt.time_spent_seconds,
+    total_questions: bestAttempt.total_questions,
+    total_attempts: attempts.length
     }, { status: 200 })
 }

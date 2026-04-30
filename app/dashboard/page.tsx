@@ -41,6 +41,7 @@ export default function Dashboard() {
     if (!token || !userData) { router.push('/dang-nhap'); return }
     const parsedUser = JSON.parse(userData)
     if (parsedUser.role === 'admin') { router.push('/admin'); return }
+    if (parsedUser.must_change_password) { router.push('/doi-mat-khau'); return }
     setUser(parsedUser)
     fetchData(parsedUser.id, token)
     }, [])
@@ -100,12 +101,20 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-5">
             <h1 className="text-red-700 font-bold text-lg">🌟 Thi Trực Tuyến Xã Trà Liên</h1>
+            <div className="flex gap-2">
             <button
-            onClick={handleLogout}
-            className="bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-600 transition shadow"
+                onClick={() => router.push('/doi-mat-khau')}
+                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-500 transition shadow"
             >
-            Đăng xuất
+                🔐 Đổi mật khẩu
             </button>
+            <button
+                onClick={handleLogout}
+                className="bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-600 transition shadow"
+            >
+                Đăng xuất
+            </button>
+            </div>
         </div>
 
         {/* Thông tin người dùng */}

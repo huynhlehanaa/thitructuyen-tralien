@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import jwt from 'jsonwebtoken'
 
+function shuffleArray<T>(items: T[]) {
+    const result = [...items]
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[result[i], result[j]] = [result[j], result[i]]
+    }
+    return result
+}
+
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -34,13 +43,33 @@ export async function POST(
     // Lấy câu hỏi (không trả về đáp án đúng)
     const { data: questions } = await supabase
     .from('questions')
-    .select('id, question_text, option_a, option_b, option_c, option_d, order_index')
+    .select('id, question_text, option_a, option_b, option_c, option_d, order_index, correct_answer')
     .eq('quiz_set_id', id)
     .order('order_index', { ascending: true })
 
     if (!questions || questions.length === 0) {
     return NextResponse.json({ error: 'Bộ đề chưa có câu hỏi!' }, { status: 400 })
     }
+
+    const shuffledQuestions = shuffleArray(questions).map((question, idx) => {
+        const optionEntries = shuffleArray([
+            { originalLabel: 'A', text: question.option_a },
+            { originalLabel: 'B', text: question.option_b },
+            { originalLabel: 'C', text: question.option_c },
+            { originalLabel: 'D', text: question.option_d },
+        ])
+
+        return {
+            id: question.id,
+            question_text: question.question_text,
+            order_index: idx + 1,
+            options: optionEntries.map((option, optionIndex) => ({
+                displayLabel: ['A', 'B', 'C', 'D'][optionIndex],
+                text: option.text,
+                originalLabel: option.originalLabel,
+            })),
+        }
+    })
 
     // Đếm số lượt thi trước đó
     const { count } = await supabase
@@ -63,7 +92,7 @@ export async function POST(
 
     return NextResponse.json({
     quizSet,
-    questions,
+    questions: shuffledQuestions,
     attemptId: attempt?.id
     })
 }

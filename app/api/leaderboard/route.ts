@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
         ) {
         userMap[uid].best_score = a.score
         userMap[uid].best_time = a.time_spent_seconds
+        userMap[uid].total_questions = a.total_questions
         }
     }
     })

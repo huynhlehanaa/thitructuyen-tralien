@@ -7,11 +7,12 @@ import toast from 'react-hot-toast'
 interface Question {
     id: string
     question_text: string
-    option_a: string
-    option_b: string
-    option_c: string
-    option_d: string
     order_index: number
+    options: Array<{
+        displayLabel: string
+        text: string
+        originalLabel: string
+    }>
 }
 
 interface QuizSet {
@@ -205,13 +206,12 @@ export default function ThiPage() {
                 <p className="text-gray-800 font-medium leading-relaxed">{q.question_text}</p>
             </div>
             <div className="flex flex-col gap-2">
-                {(['A', 'B', 'C', 'D'] as const).map(opt => {
-                const val = q[`option_${opt.toLowerCase()}` as keyof Question] as string
-                const selected = answers[q.id] === opt
+                {q.options.map(opt => {
+                const selected = answers[q.id] === opt.originalLabel
                 return (
                     <button
-                    key={opt}
-                    onClick={() => setAnswers(prev => ({ ...prev, [q.id]: opt }))}
+                    key={opt.displayLabel + opt.originalLabel}
+                    onClick={() => setAnswers(prev => ({ ...prev, [q.id]: opt.originalLabel }))}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition ${
                         selected
                         ? 'border-red-600 bg-red-50 text-red-800 font-medium'
@@ -221,9 +221,9 @@ export default function ThiPage() {
                     <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
                         selected ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'
                     }`}>
-                        {opt}
+                        {opt.displayLabel}
                     </span>
-                    <span>{val}</span>
+                    <span>{opt.text}</span>
                     </button>
                 )
                 })}
