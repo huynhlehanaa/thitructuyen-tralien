@@ -3,17 +3,18 @@ import Image from 'next/image'
 
 export default function Home() {
   return (
-    <main className="w-screen h-screen relative overflow-hidden">
+    <main className="w-screen h-screen relative overflow-hidden bg-blue-900">
       
-      {/* Ảnh nền background.webp cho trang chủ */}
+      {/* Ảnh nền tối ưu */}
       <Image
-        src="/img/background.webp"
+        src="/img/background.png"
         alt="background"
         fill
         priority
         quality={75}
-        style={{ objectFit: 'contain', objectPosition: 'center', zIndex: -10 }}
+        style={{ objectFit: 'contain', objectPosition: 'center' }}
       />
+
       <div className="absolute left-[65%] bottom-[15%] -translate-x-1/2 flex flex-row gap-4 w-auto z-10">
         <Link
           href="/dang-nhap"
