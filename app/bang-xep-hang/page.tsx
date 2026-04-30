@@ -19,24 +19,20 @@ export default function BangXepHang() {
     const router = useRouter()
     const [rankings, setRankings] = useState<RankEntry[]>([])
     const [loading, setLoading] = useState(true)
-    const [myPhone, setMyPhone] = useState('')
 
     useEffect(() => {
-    const token = localStorage.getItem('token')
-    const userData = localStorage.getItem('user')
-    if (!token || !userData) { router.push('/dang-nhap'); return }
-    const user = JSON.parse(userData)
-    setMyPhone(user.phone)
-    fetchRankings(token)
-    const interval = setInterval(() => fetchRankings(token), 15000)
+    fetchRankings()
+    const interval = setInterval(() => fetchRankings(), 15000)
     return () => clearInterval(interval)
     }, [])
 
-    const fetchRankings = async (token: string) => {
+    const fetchRankings = async () => {
     try {
-        const res = await fetch('/api/leaderboard', {
-        headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await fetch('/api/leaderboard')
+        if (res.status === 401) {
+        router.push('/dang-nhap')
+        return
+        }
         const data = await res.json()
         setRankings(data.rankings || [])
     } catch {

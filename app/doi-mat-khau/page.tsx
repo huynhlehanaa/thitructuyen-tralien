@@ -31,12 +31,10 @@ export default function DoiMatKhau() {
 
         setLoading(true)
         try {
-            const token = localStorage.getItem('token')
             const res = await fetch('/api/auth/change-password', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     oldPassword: form.oldPassword,
@@ -56,6 +54,10 @@ export default function DoiMatKhau() {
                 setForm({ oldPassword: '', newPassword: '', confirmPassword: '' })
                 setTimeout(() => router.push('/dashboard'), 1500)
             } else {
+                if (res.status === 401) {
+                    router.push('/dang-nhap')
+                    return
+                }
                 toast.error(data.error || 'Lỗi đổi mật khẩu!')
             }
         } catch {

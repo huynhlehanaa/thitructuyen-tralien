@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import { verifyUserRequest } from '@/lib/request-auth'
 
 export async function POST(req: NextRequest) {
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
-
-    let decoded
-    try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as { id: string }
-    } catch {
-        return NextResponse.json({ error: 'Token không hợp lệ!' }, { status: 401 })
-    }
+    const decoded = verifyUserRequest(req)
+    if (!decoded) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
 
     const { oldPassword, newPassword } = await req.json()
 

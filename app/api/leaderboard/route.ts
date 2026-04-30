@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import jwt from 'jsonwebtoken'
+import { verifyUserRequest } from '@/lib/request-auth'
 
 export async function GET(req: NextRequest) {
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
-
-    try {
-    jwt.verify(token, process.env.JWT_SECRET || 'secret_key')
-    } catch {
-    return NextResponse.json({ error: 'Token không hợp lệ!' }, { status: 401 })
-    }
+    if (!verifyUserRequest(req)) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
 
     // Lấy bộ đề đang active
     const { data: quizSet } = await supabase

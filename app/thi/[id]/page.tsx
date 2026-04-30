@@ -26,8 +26,6 @@ export default function ThiPage() {
     const params = useParams()
     const quizSetId = params.id as string
 
-    const [token, setToken] = useState('')
-    const [user, setUser] = useState<any>(null)
     const [quizSet, setQuizSet] = useState<QuizSet | null>(null)
     const [questions, setQuestions] = useState<Question[]>([])
     const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -43,13 +41,12 @@ export default function ThiPage() {
     setSubmitting(true)
     if (auto) toast('⏰ Hết giờ! Đang nộp bài...', { icon: '⏰' })
 
-    const t = localStorage.getItem('token')
     const timeSpent = quizSet ? quizSet.duration_seconds - timeLeft : 0
 
     try {
         const res = await fetch('/api/attempts/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ attemptId, answers, timeSpent })
         })
         const data = await res.json()
@@ -79,23 +76,20 @@ export default function ThiPage() {
     }, [timeLeft, submitted, handleSubmit])
 
     useEffect(() => {
-    const t = localStorage.getItem('token')
     const u = localStorage.getItem('user')
-    if (!t || !u) { router.push('/dang-nhap'); return }
+    if (!u) { router.push('/dang-nhap'); return }
     const parsedUser = JSON.parse(u)
     if (parsedUser.role === 'admin') { router.push('/admin'); return }
-    setToken(t)
-    setUser(parsedUser)
-    startAttempt(t)
+    startAttempt()
     }, [])
 
-    const startAttempt = async (t: string) => {
+    const startAttempt = async () => {
     try {
         const res = await fetch(`/api/quiz/${quizSetId}/start`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${t}` }
+        method: 'POST'
         })
         const data = await res.json()
+        if (res.status === 401) { router.push('/dang-nhap'); return }
         if (!res.ok) { toast.error(data.error || 'Lỗi!'); router.push('/dashboard'); return }
         setQuizSet(data.quizSet)
         setQuestions(data.questions)

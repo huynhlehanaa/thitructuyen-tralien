@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import jwt from 'jsonwebtoken'
+import { verifyUserRequest } from '@/lib/request-auth'
 
 function shuffleArray<T>(items: T[]) {
     const result = [...items]
@@ -17,16 +17,9 @@ export async function POST(
     ) {
     const { id } = await params
 
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
-
-    let userId: string
-    try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as { id: string }
-    userId = decoded.id
-    } catch {
-    return NextResponse.json({ error: 'Token không hợp lệ!' }, { status: 401 })
-    }
+    const decoded = verifyUserRequest(req)
+    if (!decoded) return NextResponse.json({ error: 'Chưa đăng nhập!' }, { status: 401 })
+    const userId = decoded.id
 
     // Lấy bộ đề
     const { data: quizSet, error: quizError } = await supabase

@@ -36,22 +36,26 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-    const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
-    if (!token || !userData) { router.push('/dang-nhap'); return }
+    if (!userData) { router.push('/dang-nhap'); return }
     const parsedUser = JSON.parse(userData)
     if (parsedUser.role === 'admin') { router.push('/admin'); return }
     if (parsedUser.must_change_password) { router.push('/doi-mat-khau'); return }
     setUser(parsedUser)
-    fetchData(parsedUser.id, token)
+    fetchData()
     }, [])
 
-    const fetchData = async (userId: string, token: string) => {
+    const fetchData = async () => {
     try {
         const [quizRes, attemptRes] = await Promise.all([
-            fetch('/api/quiz/active', { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`/api/attempts/me`, { headers: { Authorization: `Bearer ${token}` } })
+            fetch('/api/quiz/active'),
+            fetch('/api/attempts/me')
         ])
+
+        if (quizRes.status === 401 || attemptRes.status === 401) {
+            router.push('/dang-nhap')
+            return
+        }
         
         const quizData = await quizRes.json()
         if (quizData.quizSet) setQuizSet(quizData.quizSet)

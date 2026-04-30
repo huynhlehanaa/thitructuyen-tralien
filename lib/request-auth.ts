@@ -23,3 +23,13 @@ export function verifyAdminRequest(req: NextRequest): JwtPayload | null {
         return null
     }
 }
+
+export function verifyUserRequest(req: NextRequest): JwtPayload | null {
+    const token = getRequestToken(req)
+    if (!token) return null
+    try {
+        return jwt.verify(token, process.env.JWT_SECRET || 'secret_key') as JwtPayload
+    } catch {
+        return null
+    }
+}
