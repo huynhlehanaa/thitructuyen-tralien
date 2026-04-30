@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 interface Stats {
@@ -45,25 +46,31 @@ export default function AdminDashboard() {
     router.push('/')
     }
 
-    const bgStyle = {
-    backgroundImage: 'url(/img/nen.png)',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    }
-
     if (loading) return (
-    <div className="h-screen overflow-hidden flex items-center justify-center px-4" style={bgStyle}>
-        <div className="rounded-[2rem] border border-white/60 bg-white/90 px-6 py-5 shadow-2xl backdrop-blur-sm text-red-700 font-bold">
+    <div className="h-screen overflow-hidden flex items-center justify-center px-4 relative">
+        <Image src="/img/nen.webp" alt="background" fill priority quality={75} style={{ objectFit: 'cover' }} />
+        <div className="relative z-10 rounded-[2rem] border border-white/60 bg-white/90 px-6 py-5 shadow-2xl backdrop-blur-sm text-red-700 font-bold">
         Đang tải...
         </div>
     </div>
     )
 
     return (
-    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center" style={bgStyle}>
+    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
+
+        {/* Ảnh nền tối ưu */}
+        <Image
+        src="/img/nen.webp"
+        alt="background"
+        fill
+        priority
+        quality={75}
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
+        />
+
+        {/* Nội dung */}
         <div
-        className="w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm overflow-y-auto max-h-[92vh]"
+        className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm overflow-y-auto max-h-[92vh]"
         style={{ marginLeft: '22%', width: '56%' }}
         >
 

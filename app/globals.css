@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth transition toàn bộ trang */
+body {
+    transition: opacity 0.2s ease;
+}
+
+/* Ảnh nền load mượt */
+main {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

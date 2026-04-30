@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 interface User {
@@ -52,16 +53,17 @@ export default function AdminNguoiDung() {
     u.chi_doi?.toLowerCase().includes(search.toLowerCase())
     )
 
-    const bgStyle = {
-    backgroundImage: 'url(/img/nen.png)',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    }
-
     return (
-    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center" style={bgStyle}>
-        <div className="w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden" style={{ marginLeft: '22%', width: '56%', height: '98%' }}>
+    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
+        <Image
+        src="/img/nen.png"
+        alt="background"
+        fill
+        priority
+        quality={75}
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
+        />
+        <div className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden" style={{ marginLeft: '22%', width: '56%', height: '98%' }}>
 
         <div className="flex items-start justify-between gap-4 mb-5">
             <div>

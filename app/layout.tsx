@@ -13,6 +13,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
+      <head>
+        <link
+          rel="preload"
+          href="/img/background.webp"
+          as="image"
+        />
+        <link
+          rel="preload"
+          href="/img/nen.webp"
+          as="image"
+        />
+      </head>
       <body className={inter.className}>
         <Toaster position="top-center" />
         {children}

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -51,7 +52,6 @@ export default function DangKy() {
         })
         })
         const data = await res.json()
-
         if (!res.ok) {
         toast.error(data.error || 'Đăng ký thất bại!')
         } else {
@@ -65,113 +65,115 @@ export default function DangKy() {
     }
     }
 
-        return (
-        <main
-            className="h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-4"
-            style={{
-                backgroundImage: 'url(/img/nen.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-            }}
-        >
+    return (
+    <main className="h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-4 relative">
+
+        {/* Ảnh nền tối ưu */}
+        <Image
+        src="/img/nen.webp"
+        alt="background"
+        fill
+        priority
+        quality={75}
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
+        />
+
+        {/* Nội dung — z-10 để không bị ảnh che */}
         <div
-            className="w-full rounded-[2rem] border border-white/60 bg-white/95 p-8 shadow-2xl backdrop-blur-sm"
-            style={{ marginLeft: '22%', width: '40%' }}
+        className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/95 p-8 shadow-2xl backdrop-blur-sm"
+        style={{ marginLeft: '22%', width: '40%' }}
         >
-            <div className="text-center mb-5">
-                <div className="text-4xl mb-2">📝</div>
-                <h1 className="text-2xl font-bold text-red-700">Đăng Ký Tham Gia</h1>
-                <p className="text-gray-500 text-sm mt-1">Thi Trực Tuyến Xã Trà Liên 2026</p>
+        <div className="text-center mb-5">
+            <div className="text-4xl mb-2">📝</div>
+            <h1 className="text-2xl font-bold text-red-700">Đăng Ký Tham Gia</h1>
+            <p className="text-gray-500 text-sm mt-1">Thi Trực Tuyến Xã Trà Liên 2026</p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+            <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Họ và tên</label>
+            <input
+                type="text"
+                placeholder="Nguyễn Văn A"
+                value={form.fullName}
+                onChange={e => setForm({ ...form, fullName: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+            />
             </div>
 
-            <div className="flex flex-col gap-3">
-
-                <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Họ và tên</label>
-                <input
-                    type="text"
-                    placeholder="Nguyễn Văn A"
-                    value={form.fullName}
-                    onChange={e => setForm({ ...form, fullName: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
-                />
-                </div>
-
-                <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Số điện thoại</label>
-                <input
-                    type="tel"
-                    placeholder="0901234567"
-                    value={form.phone}
-                    onChange={e => setForm({ ...form, phone: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
-                />
-                </div>
-
-                <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Liên đội</label>
-                <select
-                    value={form.lienDoan}
-                    onChange={e => setForm({ ...form, lienDoan: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
-                >
-                    <option value="">-- Chọn Liên đội --</option>
-                    {LIEN_DOAN_LIST.map(ld => (
-                    <option key={ld} value={ld}>{ld}</option>
-                    ))}
-                </select>
-                </div>
-
-                <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Chi đội / Chi đoàn</label>
-                <input
-                    type="text"
-                    placeholder="VD: Chi đội 5A, Chi đoàn 9B..."
-                    value={form.chiDoi}
-                    onChange={e => setForm({ ...form, chiDoi: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
-                />
-                </div>
-
-                <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Mật khẩu</label>
-                <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
-                />
-                </div>
-
-                <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Xác nhận mật khẩu</label>
-                <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={form.confirmPassword}
-                    onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
-                />
-                </div>
-
-                <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition disabled:opacity-50 mt-1 shadow-lg"
-                >
-                {loading ? 'Đang xử lý...' : 'Đăng Ký'}
-                </button>
-
-                <p className="text-center text-sm text-gray-600">
-                Đã có tài khoản?{' '}
-                <Link href="/dang-nhap" className="text-red-700 font-medium hover:underline">
-                    Đăng nhập
-                </Link>
-                </p>
-
+            <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Số điện thoại</label>
+            <input
+                type="tel"
+                placeholder="0901234567"
+                value={form.phone}
+                onChange={e => setForm({ ...form, phone: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+            />
             </div>
+
+            <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Liên đội</label>
+            <select
+                value={form.lienDoan}
+                onChange={e => setForm({ ...form, lienDoan: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+            >
+                <option value="">-- Chọn Liên đội --</option>
+                {LIEN_DOAN_LIST.map(ld => (
+                <option key={ld} value={ld}>{ld}</option>
+                ))}
+            </select>
+            </div>
+
+            <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Chi đội / Chi đoàn</label>
+            <input
+                type="text"
+                placeholder="VD: Chi đội 5A, Chi đoàn 9B..."
+                value={form.chiDoi}
+                onChange={e => setForm({ ...form, chiDoi: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+            />
+            </div>
+
+            <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Mật khẩu</label>
+            <input
+                type="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+            />
+            </div>
+
+            <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Xác nhận mật khẩu</label>
+            <input
+                type="password"
+                placeholder="••••••••"
+                value={form.confirmPassword}
+                onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+            />
+            </div>
+
+            <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition disabled:opacity-50 mt-1 shadow-lg"
+            >
+            {loading ? 'Đang xử lý...' : 'Đăng Ký'}
+            </button>
+
+            <p className="text-center text-sm text-gray-600">
+            Đã có tài khoản?{' '}
+            <Link href="/dang-nhap" className="text-red-700 font-medium hover:underline">
+                Đăng nhập
+            </Link>
+            </p>
+        </div>
         </div>
     </main>
     )

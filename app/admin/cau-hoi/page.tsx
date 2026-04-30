@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { Suspense } from 'react'
 
@@ -112,17 +113,22 @@ function CauHoiContent() {
     D: 'bg-red-50 border-red-200',
     }
 
-    const bgStyle = {
-    backgroundImage: 'url(/img/nen.png)',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    }
-
     return (
-    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center" style={bgStyle}>
+    <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
+
+        {/* Ảnh nền tối ưu */}
+        <Image
+        src="/img/nen.webp"
+        alt="background"
+        fill
+        priority
+        quality={75}
+        style={{ objectFit: 'cover', objectPosition: 'center' }}
+        />
+
+        {/* Nội dung */}
         <div
-        className="w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden"
+        className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm flex flex-col overflow-hidden"
         style={{ marginLeft: '22%', width: '56%', height: '98%' }}
         >
         <div className="flex items-center justify-between gap-4 mb-5">
@@ -134,148 +140,148 @@ function CauHoiContent() {
 
         <div className="flex-1 overflow-y-auto pr-1">
 
-        <button
+            <button
             onClick={() => { resetForm(); setShowForm(!showForm) }}
             className="bg-red-700 text-white font-bold px-6 py-3 rounded-xl hover:bg-red-600 transition mb-6 w-full shadow"
-        >
+            >
             {showForm && !editId ? '✕ Đóng' : '+ Thêm Câu Hỏi Mới'}
-        </button>
+            </button>
 
-        {/* Form thêm/sửa */}
-        {showForm && (
+            {/* Form thêm/sửa */}
+            {showForm && (
             <div className="bg-white rounded-2xl p-6 shadow mb-6 border border-red-100">
-            <h2 className="font-bold text-gray-800 mb-4">
+                <h2 className="font-bold text-gray-800 mb-4">
                 {editId ? '✏️ Sửa câu hỏi' : '➕ Thêm câu hỏi mới'}
-            </h2>
-            <div className="flex flex-col gap-4">
+                </h2>
+                <div className="flex flex-col gap-4">
                 <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Nội dung câu hỏi</label>
-                <textarea
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Nội dung câu hỏi</label>
+                    <textarea
                     rows={3}
                     placeholder="Nhập câu hỏi..."
                     value={form.question_text}
                     onChange={e => setForm({ ...form, question_text: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800 resize-none"
-                />
+                    />
                 </div>
 
                 {(['A', 'B', 'C', 'D'] as const).map(opt => (
-                <div key={opt}>
+                    <div key={opt}>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Đáp án {opt}
-                    {form.correct_answer === opt && <span className="ml-2 text-green-600">✓ Đúng</span>}
+                        Đáp án {opt}
+                        {form.correct_answer === opt && <span className="ml-2 text-green-600">✓ Đúng</span>}
                     </label>
                     <input
-                    type="text"
-                    placeholder={`Nhập đáp án ${opt}...`}
-                    value={form[`option_${opt.toLowerCase()}` as keyof typeof form]}
-                    onChange={e => setForm({ ...form, [`option_${opt.toLowerCase()}`]: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
+                        type="text"
+                        placeholder={`Nhập đáp án ${opt}...`}
+                        value={form[`option_${opt.toLowerCase()}` as keyof typeof form]}
+                        onChange={e => setForm({ ...form, [`option_${opt.toLowerCase()}`]: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 text-gray-800"
                     />
-                </div>
+                    </div>
                 ))}
 
                 <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Đáp án đúng</label>
-                <div className="grid grid-cols-4 gap-2">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Đáp án đúng</label>
+                    <div className="grid grid-cols-4 gap-2">
                     {(['A', 'B', 'C', 'D'] as const).map(opt => (
-                    <button
+                        <button
                         key={opt}
                         onClick={() => setForm({ ...form, correct_answer: opt })}
                         className={`py-3 rounded-xl font-bold text-lg transition ${
-                        form.correct_answer === opt
+                            form.correct_answer === opt
                             ? 'bg-green-600 text-white shadow-md scale-105'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
-                    >
+                        >
                         {opt}
-                    </button>
+                        </button>
                     ))}
-                </div>
+                    </div>
                 </div>
 
                 <div className="flex gap-3">
-                <button
+                    <button
                     onClick={handleSubmit}
                     className="flex-1 bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition"
-                >
+                    >
                     {editId ? 'Cập Nhật' : 'Thêm Câu Hỏi'}
-                </button>
-                <button
+                    </button>
+                    <button
                     onClick={resetForm}
                     className="px-6 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition"
-                >
+                    >
                     Hủy
-                </button>
+                    </button>
+                </div>
                 </div>
             </div>
-            </div>
-        )}
+            )}
 
-        {/* Danh sách câu hỏi */}
-        {loading ? (
+            {/* Danh sách câu hỏi */}
+            {loading ? (
             <p className="text-center text-gray-500">Đang tải...</p>
-        ) : questions.length === 0 ? (
+            ) : questions.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center shadow border border-red-100">
-            <p className="text-4xl mb-2">📭</p>
-            <p className="text-gray-500">Chưa có câu hỏi nào</p>
+                <p className="text-4xl mb-2">📭</p>
+                <p className="text-gray-500">Chưa có câu hỏi nào</p>
             </div>
-        ) : (
+            ) : (
             <div className="flex flex-col gap-4">
-            {questions.map((q, idx) => (
+                {questions.map((q, idx) => (
                 <div key={q.id} className="bg-white rounded-2xl p-5 shadow border border-red-100">
-                <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-3">
                     <span className="bg-red-700 text-white text-sm font-bold px-3 py-1 rounded-full">
-                    Câu {idx + 1}
+                        Câu {idx + 1}
                     </span>
                     <div className="flex gap-2">
-                    <button
+                        <button
                         onClick={() => handleEdit(q)}
                         className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm hover:bg-blue-200 transition"
-                    >
+                        >
                         ✏️ Sửa
-                    </button>
-                    <button
+                        </button>
+                        <button
                         onClick={() => handleDelete(q.id)}
                         className="bg-red-100 text-red-700 px-3 py-1 rounded-lg text-sm hover:bg-red-200 transition"
-                    >
+                        >
                         🗑️ Xóa
-                    </button>
+                        </button>
                     </div>
-                </div>
+                    </div>
 
-                <p className="text-gray-800 font-medium mb-3">{q.question_text}</p>
+                    <p className="text-gray-800 font-medium mb-3">{q.question_text}</p>
 
-                <div className="grid grid-cols-1 gap-2">
+                    <div className="grid grid-cols-1 gap-2">
                     {(['A', 'B', 'C', 'D'] as const).map(opt => (
-                    <div
+                        <div
                         key={opt}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${
-                        q.correct_answer === opt
+                            q.correct_answer === opt
                             ? 'bg-green-50 border-green-400 text-green-800 font-bold'
                             : answerColors[opt]
                         }`}
-                    >
+                        >
                         <span className="font-bold w-5">{opt}.</span>
                         <span>{q[`option_${opt.toLowerCase()}` as keyof Question]}</span>
                         {q.correct_answer === opt && <span className="ml-auto">✓</span>}
-                    </div>
+                        </div>
                     ))}
+                    </div>
                 </div>
-                </div>
-            ))}
+                ))}
             </div>
-        )}
+            )}
 
         </div>
 
         <div className="mt-4 flex justify-center">
-        <button
+            <button
             onClick={() => router.push('/admin/bo-de')}
             className="rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 border border-gray-200"
-        >
+            >
             Quay lại
-        </button>
+            </button>
         </div>
         </div>
     </main>
@@ -284,7 +290,11 @@ function CauHoiContent() {
 
 export default function AdminCauHoi() {
     return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-100 flex items-center justify-center"><p>Đang tải...</p></div>}>
+    <Suspense fallback={
+        <div className="h-screen flex items-center justify-center bg-gray-100">
+        <p>Đang tải...</p>
+        </div>
+    }>
         <CauHoiContent />
     </Suspense>
     )

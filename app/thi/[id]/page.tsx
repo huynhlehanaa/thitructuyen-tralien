@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 interface Question {
@@ -64,7 +65,6 @@ export default function ThiPage() {
     }
     }, [submitting, submitted, attemptId, answers, timeLeft, quizSet])
 
-    // Đồng hồ đếm ngược
     useEffect(() => {
     if (timeLeft <= 0 || submitted) return
     if (timeLeft === 60) toast('⚠️ Còn 1 phút!', { icon: '⚠️' })
@@ -90,7 +90,6 @@ export default function ThiPage() {
 
     const startAttempt = async (t: string) => {
     try {
-        // Lấy thông tin bộ đề + câu hỏi
         const res = await fetch(`/api/quiz/${quizSetId}/start`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${t}` }
@@ -117,19 +116,13 @@ export default function ThiPage() {
 
     const answeredCount = Object.keys(answers).length
 
-    const bgStyle = {
-    backgroundImage: 'url(/img/nen.png)',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    }
-
     // Trang kết quả
     if (submitted && result) {
     const percent = Math.round((result.score / result.total) * 100)
     return (
-        <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center" style={bgStyle}>
-        <div className="w-full rounded-[2rem] border border-white/60 bg-white/90 p-8 shadow-2xl backdrop-blur-sm text-center" style={{ marginLeft: '22%', width: '40%' }}>
+        <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
+        <Image src="/img/nen.webp" alt="background" fill priority quality={75} style={{ objectFit: 'cover' }} />
+        <div className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-8 shadow-2xl backdrop-blur-sm text-center" style={{ marginLeft: '22%', width: '40%' }}>
             <div className="text-6xl mb-4">{percent >= 80 ? '🏆' : percent >= 50 ? '👍' : '📚'}</div>
             <h1 className="text-2xl font-bold text-red-700 mb-2">Kết Quả Bài Thi</h1>
             <div className="bg-white rounded-2xl border border-red-100 p-6 mb-6 shadow-sm">
@@ -167,8 +160,9 @@ export default function ThiPage() {
 
     if (loading) {
     return (
-        <div className="min-h-screen bg-gradient-to-b from-red-700 to-red-900 flex items-center justify-center">
-        <div className="text-white text-xl">Đang tải bài thi...</div>
+        <div className="h-screen overflow-hidden flex items-center justify-center relative">
+        <Image src="/img/nen.webp" alt="background" fill priority quality={75} style={{ objectFit: 'cover' }} />
+        <div className="relative z-10 text-white text-xl font-bold">Đang tải bài thi...</div>
         </div>
     )
     }
@@ -190,8 +184,6 @@ export default function ThiPage() {
             ⏱ {formatTime(timeLeft)}
             </div>
         </div>
-
-        {/* Progress bar */}
         <div className="max-w-2xl mx-auto mt-2">
             <div className="bg-white/20 rounded-full h-1.5">
             <div
@@ -212,7 +204,6 @@ export default function ThiPage() {
                 </span>
                 <p className="text-gray-800 font-medium leading-relaxed">{q.question_text}</p>
             </div>
-
             <div className="flex flex-col gap-2">
                 {(['A', 'B', 'C', 'D'] as const).map(opt => {
                 const val = q[`option_${opt.toLowerCase()}` as keyof Question] as string
@@ -241,7 +232,7 @@ export default function ThiPage() {
         ))}
         </div>
 
-        {/* Nút nộp bài cố định ở dưới */}
+        {/* Nút nộp bài */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg px-4 py-4">
         <div className="max-w-2xl mx-auto">
             <button
