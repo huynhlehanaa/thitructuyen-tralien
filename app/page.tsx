@@ -38,7 +38,7 @@ export default function Home() {
 
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/40 to-transparent" />
 
-        <div className="absolute inset-x-0 bottom-[5%] z-10 flex flex-col gap-3 px-6 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
+        <div className="absolute inset-x-0 bottom-[3%] z-10 flex flex-col gap-3 px-6 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
           <Link
             href="/dang-nhap"
             className="w-full bg-yellow-400 text-red-900 font-bold py-4 rounded-xl text-center text-lg shadow-xl active:scale-95 transition"
