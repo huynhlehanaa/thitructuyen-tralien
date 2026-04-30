@@ -26,22 +26,19 @@ export default function Home() {
       </div>
 
       {/* Mobile */}
-      <div className="md:hidden flex flex-col h-full bg-[#0f2347]">
+      <div className="md:hidden absolute inset-0">
+        <Image
+          src="/img/background-mobile.webp"
+          alt="Thi Trực Tuyến Trà Liên"
+          fill
+          priority
+          quality={75}
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
+        />
 
-        {/* Ảnh chiếm toàn bộ phần trên */}
-        <div className="relative w-full flex-1">
-          <Image
-            src="/img/background-mobile.webp"
-            alt="Thi Trực Tuyến Trà Liên"
-            fill
-            priority
-            quality={75}
-            style={{ objectFit: 'cover', objectPosition: 'center' }}
-          />
-        </div>
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/40 to-transparent" />
 
-        {/* Nút bấm phía dưới */}
-        <div className="flex flex-col gap-3 px-6 py-6 bg-[#0f2347]">
+        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-3 px-6 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-20">
           <Link
             href="/dang-nhap"
             className="w-full bg-yellow-400 text-red-900 font-bold py-4 rounded-xl text-center text-lg shadow-xl active:scale-95 transition"
@@ -55,7 +52,6 @@ export default function Home() {
             📝 Đăng Ký
           </Link>
         </div>
-
       </div>
     </main>
   )
