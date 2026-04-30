@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
@@ -104,14 +103,6 @@ export default async function DashboardPage() {
 
     return (
         <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
-            <Image
-                src="/img/nen.webp"
-                alt="background"
-                fill
-                priority
-                quality={75}
-                style={{ objectFit: 'cover', objectPosition: 'center' }}
-            />
 
             <div className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-sm" style={{ marginLeft: '22%', width: '52%' }}>
                 <div className="flex justify-between items-center mb-5">

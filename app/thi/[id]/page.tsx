@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 interface Question {
@@ -116,7 +115,6 @@ export default function ThiPage() {
     const percent = Math.round((result.score / result.total) * 100)
     return (
         <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
-        <Image src="/img/nen.webp" alt="background" fill priority quality={75} style={{ objectFit: 'cover' }} />
         <div className="relative z-10 w-full rounded-[2rem] border border-white/60 bg-white/90 p-8 shadow-2xl backdrop-blur-sm text-center" style={{ marginLeft: '22%', width: '40%' }}>
             <div className="text-6xl mb-4">{percent >= 80 ? '🏆' : percent >= 50 ? '👍' : '📚'}</div>
             <h1 className="text-2xl font-bold text-red-700 mb-2">Kết Quả Bài Thi</h1>
@@ -156,7 +154,6 @@ export default function ThiPage() {
     if (loading) {
     return (
         <div className="h-screen overflow-hidden flex items-center justify-center relative">
-        <Image src="/img/nen.webp" alt="background" fill priority quality={75} style={{ objectFit: 'cover' }} />
         <div className="relative z-10 text-white text-xl font-bold">Đang tải bài thi...</div>
         </div>
     )

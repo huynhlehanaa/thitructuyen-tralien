@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 export default function DoiMatKhau() {
@@ -69,16 +68,6 @@ export default function DoiMatKhau() {
 
     return (
         <main className="h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-4 relative">
-
-            {/* Ảnh nền tối ưu */}
-            <Image
-                src="/img/nen.webp"
-                alt="background"
-                fill
-                priority
-                quality={75}
-                style={{ objectFit: 'cover', objectPosition: 'center' }}
-            />
 
             {/* Nội dung */}
             <div

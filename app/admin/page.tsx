@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
@@ -54,16 +53,6 @@ export default async function AdminDashboard() {
 
     return (
     <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
-
-        {/* Ảnh nền tối ưu */}
-        <Image
-        src="/img/nen.webp"
-        alt="background"
-        fill
-        priority
-        quality={75}
-        style={{ objectFit: 'cover', objectPosition: 'center' }}
-        />
 
         {/* Nội dung */}
         <div

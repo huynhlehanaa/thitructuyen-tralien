@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import Image from 'next/image'
 import { unstable_cache } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import { verifyTokenString } from '@/lib/request-auth'
@@ -95,16 +94,6 @@ export default async function BangXepHang() {
 
     return (
     <main className="h-screen overflow-hidden px-4 py-4 flex items-center justify-center relative">
-
-        {/* Ảnh nền tối ưu */}
-        <Image
-        src="/img/nen.webp"
-        alt="background"
-        fill
-        priority
-        quality={75}
-        style={{ objectFit: 'cover', objectPosition: 'center' }}
-        />
 
         {/* Nội dung */}
         <div
