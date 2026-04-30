@@ -23,6 +23,13 @@ export default function AdminDashboard() {
     if (!token || !userData) { router.push('/dang-nhap'); return }
     const parsedUser = JSON.parse(userData)
     if (parsedUser.role !== 'admin') { router.push('/dashboard'); return }
+    const cachedStats = sessionStorage.getItem('admin-stats')
+    if (cachedStats) {
+        try {
+        setStats(JSON.parse(cachedStats))
+        setLoading(false)
+        } catch {}
+    }
     fetchStats(token)
     }, [])
 
@@ -33,6 +40,7 @@ export default function AdminDashboard() {
         })
         const data = await res.json()
         setStats(data)
+        sessionStorage.setItem('admin-stats', JSON.stringify(data))
     } catch {
         toast.error('Lỗi tải dữ liệu!')
     } finally {

@@ -30,6 +30,13 @@ export default function AdminBoDe() {
     if (!t || !u) { router.push('/dang-nhap'); return }
     if (JSON.parse(u).role !== 'admin') { router.push('/dashboard'); return }
     setToken(t)
+    const cachedQuizSets = sessionStorage.getItem('admin-quiz-sets')
+    if (cachedQuizSets) {
+        try {
+        setQuizSets(JSON.parse(cachedQuizSets))
+        setLoading(false)
+        } catch {}
+    }
     fetchQuizSets(t)
     }, [])
 
@@ -39,6 +46,7 @@ export default function AdminBoDe() {
     })
     const data = await res.json()
     setQuizSets(data.quizSets || [])
+    sessionStorage.setItem('admin-quiz-sets', JSON.stringify(data.quizSets || []))
     setLoading(false)
     }
 

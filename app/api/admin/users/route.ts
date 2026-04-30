@@ -21,23 +21,24 @@ export async function GET(req: NextRequest) {
 
     if (!users) return NextResponse.json({ users: [] })
 
-    // Lấy bộ đề đang active
-    const { data: quizSet } = await supabase
-    .from('quiz_sets')
-    .select('id')
-    .eq('is_active', true)
-    .single()
+    const [quizSetResult, attemptsResult] = await Promise.all([
+    supabase
+        .from('quiz_sets')
+        .select('id')
+        .eq('is_active', true)
+        .single(),
+    supabase
+        .from('attempts')
+        .select('user_id, quiz_set_id, score')
+        .not('finished_at', 'is', null),
+    ])
 
-    // Lấy thống kê lượt thi
-    const { data: attempts } = await supabase
-    .from('attempts')
-    .select('user_id, score')
-    .eq('quiz_set_id', quizSet?.id || '')
-    .not('finished_at', 'is', null)
+    const quizSet = quizSetResult.data
+    const attempts = attemptsResult.data
 
     // Gắn thống kê vào từng user
     const usersWithStats = users.map(u => {
-    const userAttempts = attempts?.filter(a => a.user_id === u.id) || []
+    const userAttempts = attempts?.filter(a => a.user_id === u.id && a.quiz_set_id === quizSet?.id) || []
     const best_score = userAttempts.length > 0 ? Math.max(...userAttempts.map(a => a.score)) : 0
     return {
         ...u,

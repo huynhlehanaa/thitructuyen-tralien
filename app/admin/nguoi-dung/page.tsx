@@ -30,6 +30,13 @@ export default function AdminNguoiDung() {
     if (!t || !u) { router.push('/dang-nhap'); return }
     if (JSON.parse(u).role !== 'admin') { router.push('/dashboard'); return }
     setToken(t)
+    const cachedUsers = sessionStorage.getItem('admin-users')
+    if (cachedUsers) {
+        try {
+        setUsers(JSON.parse(cachedUsers))
+        setLoading(false)
+        } catch {}
+    }
     fetchUsers(t)
     }, [])
 
@@ -40,6 +47,7 @@ export default function AdminNguoiDung() {
         })
         const data = await res.json()
         setUsers(data.users || [])
+        sessionStorage.setItem('admin-users', JSON.stringify(data.users || []))
     } catch {
         toast.error('Lỗi tải dữ liệu!')
     } finally {
