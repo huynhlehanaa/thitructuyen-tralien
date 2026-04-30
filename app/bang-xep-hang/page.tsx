@@ -156,7 +156,7 @@ export default function BangXepHang() {
 
         <div className="mt-4 flex justify-center">
             <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/dashboard')}
             className="rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 border border-gray-200"
             >
             Quay lại
