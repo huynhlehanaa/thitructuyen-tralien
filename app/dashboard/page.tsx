@@ -47,10 +47,14 @@ export default function Dashboard() {
 
     const fetchData = async (userId: string, token: string) => {
     try {
-        const res = await fetch('/api/quiz/active', { headers: { Authorization: `Bearer ${token}` } })
-        const data = await res.json()
-        if (data.quizSet) setQuizSet(data.quizSet)
-        const attemptRes = await fetch(`/api/attempts/me?quizSetId=${data.quizSet?.id}`, { headers: { Authorization: `Bearer ${token}` } })
+        const [quizRes, attemptRes] = await Promise.all([
+            fetch('/api/quiz/active', { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`/api/attempts/me`, { headers: { Authorization: `Bearer ${token}` } })
+        ])
+        
+        const quizData = await quizRes.json()
+        if (quizData.quizSet) setQuizSet(quizData.quizSet)
+        
         const attemptData = await attemptRes.json()
         if (attemptData) setAttemptInfo(attemptData)
     } catch {
