@@ -12,7 +12,7 @@ export default function Home() {
         fill
         priority
         quality={75}
-        style={{ objectFit: 'contain', objectPosition: 'center', zIndex: -10 }}
+        style={{ objectFit: 'cover', objectPosition: 'center', zIndex: -10 }}
       />
 
       <div className="absolute left-[65%] bottom-[15%] -translate-x-1/2 flex flex-row gap-4 w-auto z-10">
