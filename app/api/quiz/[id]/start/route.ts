@@ -64,12 +64,13 @@ export async function POST(
         }
     })
 
-    // Đếm số lượt thi trước đó
+    // Đếm số lượt thi đã hoàn thành
     const { count } = await supabase
     .from('attempts')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('quiz_set_id', id)
+    .not('finished_at', 'is', null)
 
     // Giới hạn 5 lượt
     const MAX_ATTEMPTS = 5
