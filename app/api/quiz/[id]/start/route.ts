@@ -64,34 +64,65 @@ export async function POST(
         }
     })
 
-    // Đếm số lượt thi đã hoàn thành
-    const { count } = await supabase
-    .from('attempts')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('quiz_set_id', id)
-    .not('finished_at', 'is', null)
 
-    // Giới hạn 5 lượt
-    const MAX_ATTEMPTS = 5
-    if ((count || 0) >= MAX_ATTEMPTS) {
-        return NextResponse.json({ 
-            error: `Bạn đã dùng hết ${MAX_ATTEMPTS} lượt thi cho bài này!` 
-        }, { status: 403 })
-    }
+        // Kiểm tra có attempt chưa hoàn thành không (reload lại trang, mất mạng, v.v.)
+        const { data: incompleteAttempt } = await supabase
+        .from('attempts')
+        .select('id, created_at')
+        .eq('user_id', userId)
+        .eq('quiz_set_id', id)
+        .is('finished_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
 
-    // Tạo lượt thi mới
-    const { data: attempt } = await supabase
-    .from('attempts')
-    .insert({
-        user_id: userId,
-        quiz_set_id: id,
-        total_questions: questions.length,
-        attempt_number: (count || 0) + 1,
-    })
-    .select()
-    .single()
+        // Nếu có attempt chưa hoàn thành và còn dưới 30 phút, cho phép tiếp tục
+        if (incompleteAttempt) {
+            const createdTime = new Date(incompleteAttempt.created_at).getTime()
+            const now = Date.now()
+            const elapsedMinutes = (now - createdTime) / (1000 * 60)
+        
+            if (elapsedMinutes < 30) {
+                // Trả lại attempt cũ (cho phép tiếp tục)
+                return NextResponse.json({
+                    quizSet,
+                    questions: shuffledQuestions,
+                    attemptId: incompleteAttempt.id,
+                    isResuming: true
+                })
+            } else {
+                // Xóa attempt cũ (quá 30 phút)
+                await supabase.from('attempts').delete().eq('id', incompleteAttempt.id)
+            }
+        }
 
+        // Đếm số lượt thi đã hoàn thành
+        const { count } = await supabase
+        .from('attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('quiz_set_id', id)
+        .not('finished_at', 'is', null)
+
+        // Giới hạn 5 lượt
+        const MAX_ATTEMPTS = 5
+        if ((count || 0) >= MAX_ATTEMPTS) {
+            return NextResponse.json({ 
+                error: `Bạn đã dùng hết ${MAX_ATTEMPTS} lượt thi cho bài này!` 
+            }, { status: 403 })
+        }
+
+        // Tạo lượt thi mới
+        const { data: attempt } = await supabase
+        .from('attempts')
+        .insert({
+            user_id: userId,
+            quiz_set_id: id,
+            total_questions: questions.length,
+            attempt_number: (count || 0) + 1,
+        })
+        .select()
+        .single()
     return NextResponse.json({
     quizSet,
     questions: shuffledQuestions,
